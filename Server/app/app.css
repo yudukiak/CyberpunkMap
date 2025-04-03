@@ -7,10 +7,21 @@
 }
 
 html,
-body {
-  @apply bg-white dark:bg-gray-950;
+body,
+#map {
+  background: #1e1e29;
+}
 
-  @media (prefers-color-scheme: dark) {
-    color-scheme: dark;
+#map {
+  .leaflet-popup-content-wrapper {
+    border-radius: 0.5rem;
+  }
+
+  .leaflet-popup-content {
+    margin: 0.5rem 1rem;
+  }
+
+  .leaflet-popup-close-button {
+    display: none;
   }
 }

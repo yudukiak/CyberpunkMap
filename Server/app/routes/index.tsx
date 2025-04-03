@@ -1,0 +1,10 @@
+import type { Route } from "./+types/index";
+import { redirect } from "react-router";
+
+export async function loader() {
+  throw redirect("/red");
+}
+
+export default function Index() {
+  return <div></div>;
+}
