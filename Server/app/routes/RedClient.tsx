@@ -4,8 +4,7 @@ import { useEffect } from "react";
 import { useRevalidator } from "react-router";
 import { CRS, Icon } from "leaflet";
 
-const IS_DEV = import.meta.env.MODE === "development";
-const WS_PORT = import.meta.env.VITE_WS_PORT;
+const wsPort = import.meta.env.VITE_SERVER_PORT;
 
 const pinColor = {
   blue: "hue-rotate-[0deg]",
@@ -42,11 +41,11 @@ export default function RedClient({ loaderData }: MapClientProps) {
   const revalidator = useRevalidator();
 
   useEffect(() => {
-    const protocol = IS_DEV ? "ws" : "wss";
-    const ws = new WebSocket(`${protocol}://${window.location.hostname}:${WS_PORT}`);
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+    const ws = new WebSocket(`${wsProtocol}://${window.location.hostname}:${wsPort}`);
     ws.onopen = () => console.log("✅ WebSocket 接続成功");
     ws.onmessage = (event) => {
-      if (event.data === "map_red_updated") {
+      if (event.data === "red_map_updated") {
         console.log("🔁 ピン更新通知受信 → 再取得！");
         revalidator.revalidate();
       }

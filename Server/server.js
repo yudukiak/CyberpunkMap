@@ -1,5 +1,6 @@
 import express from "express";
 import https from "https";
+import http from "http";
 import fs from "fs";
 import path from "path";
 import { createRequestHandler } from "@react-router/express";
@@ -8,8 +9,41 @@ import pkg from "pg";
 import 'dotenv/config';
 
 const app = express();
-const IS_DEV = process.env.MODE === "development";
-const PORT = process.env.SERVER_PORT;
+const isWindows = process.platform === 'win32';
+const isDev = process.env.MODE === "development";
+const PORT = process.env.VITE_SERVER_PORT;
+
+// WebSocket サーバー（開発: ポート単独 / 本番: HTTPS にバインド）
+let server;
+let wss;
+
+// 開発モード
+if (isDev) {
+  wss = new WebSocketServer({ port: PORT });
+  console.log(`🧪 開発モード: WebSocket(ws)起動 ws://localhost:${PORT}`);
+}
+// 本番モード & Windows
+else if (isWindows) {
+  server = http.createServer(app);
+  console.log("💻 Windows環境: HTTPサーバー起動");
+  wss = new WebSocketServer({ server });
+  console.log(`💻 Windows環境: WebSocket(ws)起動 ws://localhost:${PORT}`);
+}
+// 本番モード & Raspberry Pi
+else {
+  function getCertPath(filename) {
+    const basePath = path.join('/etc', 'letsencrypt', 'live', process.env.SERVER_DOMAIN);
+    return path.join(basePath, filename);
+  }
+  const sslOptions = {
+    key: fs.readFileSync(getCertPath('privkey.pem')),
+    cert: fs.readFileSync(getCertPath('fullchain.pem')),
+  };
+  server = https.createServer(sslOptions, app);
+  console.log("🔐 本番モード: HTTPSサーバー起動");
+  wss = new WebSocketServer({ server });
+  console.log("🔐 本番モード: WebSocket(wss)起動");
+}
 
 // PostgreSQL 接続
 const db = new pkg.Client({
@@ -19,60 +53,48 @@ const db = new pkg.Client({
   password: process.env.VITE_DB_PASS,
   database: process.env.VITE_DB_NAME,
 });
-
 await db.connect();
-await db.query("LISTEN map_red_update");
+await db.query("LISTEN red_map_update");
 console.log("📡 PostgreSQL LISTEN 開始");
-
-// WebSocket サーバー（開発: ポート単独 / 本番: HTTPS にバインド）
-let server;
-let wss;
-
-if (IS_DEV) {
-  wss = new WebSocketServer({ port: PORT });
-  console.log(`🧪 開発モード → WebSocket専用ポート ws://localhost:${PORT}`);
-} else {
-  const getCertPath = (filename) => path.join("certs", filename);
-  const sslOptions = {
-    key: fs.readFileSync(getCertPath("key.pem")),
-    cert: fs.readFileSync(getCertPath("cert.pem")),
-  };
-  server = https.createServer(sslOptions, app);
-  wss = new WebSocketServer({ server });
-  console.log("🔐 本番モード → HTTPS + WSS 対応");
-}
-
+// 通知受信時に WebSocket 経由でクライアントに送信
 db.on("notification", (msg) => {
-  if (msg.channel === "map_red_update") {
-    console.log("🔔 map_red_update 通知受信 → クライアントに通知");
+  if (msg.channel === "red_map_update") {
+    console.log("🔔 red_map_update 通知受信 → クライアントに通知");
     wss.clients.forEach((client) => {
       if (client.readyState === client.OPEN) {
-        client.send("map_red_updated");
+        // クライアント側のイベント名
+        client.send("red_map_updated");
       }
     });
   }
 });
 
-if (!IS_DEV) {
-  // 👀 ビルドファイル存在チェック
+// devモードでは、WebSocketサーバーを単独で起動
+if (isDev) {
+  console.log(`✅ WebSocket専用モード起動 → ws://localhost:${PORT}`);
+}
+// 本番モードではサーバーを起動
+else {
+  console.log("👀 ビルドファイル存在チェック")
   const buildPath = "./build/server/index.js";
   if (!fs.existsSync(buildPath)) {
     console.error("❌ build/server/index.js が存在しません");
     process.exit(1);
   }
-
-  // 💾 React Router のビルドを安全に import
+  console.log("💾 React Router のビルドを安全に import");
   let build;
   try {
     build = await import(buildPath);
-    build = build.default ?? build;
   } catch (err) {
     console.error("❌ build/server/index.js が読み込めません", err);
     process.exit(1);
   }
 
-  console.log("📦 React Router Build Routes:", build.routes);
+  console.log("🗂 静的ファイル（JS/CSS）を配信");
   app.use(express.static("build/client"));
+  console.log("🗂 静的ファイル（画像）を配信");
+  app.use(express.static("public"));
+  console.log("🗂 静的ファイル（マップ）を配信");
   app.all(/.*/, async (req, res, next) => {
     try {
       return createRequestHandler({ build })(req, res, next);
@@ -82,11 +104,18 @@ if (!IS_DEV) {
     }
   });
 
-  server.listen(PORT, () => {
-    const domain = process.env.SERVER_DOMAIN || "localhost";
-    console.log(`✅ HTTPSサーバー起動中 → https://${domain}:${PORT}`);
-    console.log(`🌐 WebSocket → wss://${domain}:${PORT}`);
-  });
-} else {
-  console.log(`✅ WebSocket専用モード起動 → ws://localhost:${PORT}`);
+  // 🚀 サーバー起動
+  if (isWindows) {
+    // Windows は HTTP
+    server.listen(PORT, () => {
+      console.log(`🚀 HTTPサーバー起動中 → http://localhost:${PORT}`);
+    });
+  } else {
+    // Raspberry Pi は HTTPS
+    server.listen(PORT, () => {
+      const domain = process.env.SERVER_DOMAIN || "localhost";
+      console.log(`✅ HTTPSサーバー起動中 → https://${domain}:${PORT}`);
+      console.log(`🌐 WebSocket → wss://${domain}:${PORT}`);
+    });
+  }
 }
