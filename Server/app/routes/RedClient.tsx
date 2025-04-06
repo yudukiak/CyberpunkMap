@@ -1,26 +1,16 @@
-import type { PinsType, MapClientProps } from "types/map"
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from "react-leaflet";
+import type { PinsType } from "types/map";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  useMapEvents,
+} from "react-leaflet";
 import { useEffect } from "react";
 import { useRevalidator } from "react-router";
 import { CRS, Icon } from "leaflet";
 
 const wsPort = import.meta.env.VITE_SERVER_PORT;
-
-const pinColor = {
-  blue: "hue-rotate-[0deg]",
-  indigo: "hue-rotate-[30deg]",
-  violet: "hue-rotate-[60deg]",
-  pink: "hue-rotate-[90deg]",
-  red: "hue-rotate-[120deg]",
-  orange: "hue-rotate-[150deg]",
-  amber: "hue-rotate-[180deg]",
-  yellow: "hue-rotate-[210deg]",
-  lime: "hue-rotate-[240deg]",
-  green: "hue-rotate-[270deg]",
-  teal: "hue-rotate-[300deg]",
-  cyan: "hue-rotate-[330deg]",
-  gray: "grayscale",
-};
 
 function ClipboardMapClick() {
   useMapEvents({
@@ -36,13 +26,14 @@ function ClipboardMapClick() {
   return null;
 }
 
-export default function RedClient({ loaderData }: MapClientProps) {
-  const { pins } = loaderData;
+export default function RedClient({ pins }: { pins: PinsType[] }) {
   const revalidator = useRevalidator();
 
   useEffect(() => {
-    const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-    const ws = new WebSocket(`${wsProtocol}://${window.location.hostname}:${wsPort}`);
+    const wsProtocol = window.location.protocol === "https:" ? "wss" : "ws";
+    const ws = new WebSocket(
+      `${wsProtocol}://${window.location.hostname}:${wsPort}`
+    );
     ws.onopen = () => console.log("✅ WebSocket 接続成功");
     ws.onmessage = (event) => {
       if (event.data === "red_map_updated") {
@@ -70,22 +61,31 @@ export default function RedClient({ loaderData }: MapClientProps) {
         url="/map/CyberpunkRed/tiles/{z}/{x}/{y}.png"
         tileSize={256}
         noWrap={true}
-        bounds={[[-256, 256], [0, 0]]}
+        bounds={[
+          [-256, 256],
+          [0, 0],
+        ]}
         attribution='<a href="https://rtalsoriangames.com/2025/01/15/cyberpunk-red-alert-january-2025-dlc-night-city-atlas/" target="_blank">R. Talsorian Games</a>'
       />
-      <ClipboardMapClick />
-      {pins.map(({ lat, lng, content, pin_color }, i) => {
-        const className = pinColor[pin_color as keyof typeof pinColor] ?? "blue";
+      {/*<ClipboardMapClick />*/}
+      {pins.map(({ lat, lng, content, className, zIndexOffset }, i) => {
         const icon = new Icon({
           iconUrl: "/map/marker-icon.png",
           iconSize: [25, 41],
           iconAnchor: [12, 41],
           popupAnchor: [1, -34],
-          className,
+          className: `${className}`,
         });
         return (
-          <Marker key={`${lat},${lng}-${i}`} position={[lat, lng]} icon={icon}>
-            {content && <Popup>{content}</Popup>}
+          <Marker
+            key={`${lat},${lng}-${i}`}
+            position={[lat, lng]}
+            icon={icon}
+            zIndexOffset={zIndexOffset || 0}
+          >
+            {content && (
+              <Popup className="whitespace-pre-line">{content}</Popup>
+            )}
           </Marker>
         );
       })}
