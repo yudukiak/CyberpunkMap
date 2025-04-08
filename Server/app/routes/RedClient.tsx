@@ -12,7 +12,7 @@ import { useEffect } from "react";
 import { useRevalidator } from "react-router";
 import { CRS, Icon } from "leaflet";
 
-const isDev = import.meta.env.MODE === "development";
+let isDev = import.meta.env.MODE === "development";
 const consoleLog = (...args: any[]) => isDev && console.log(...args);
 const consoleError = (...args: any[]) => isDev && console.error(...args);
 const consoleWarn = (...args: any[]) => isDev && console.warn(...args);
@@ -38,6 +38,8 @@ export default function RedClient({ pins }: { pins: PinsObjectType[] }) {
 
   const revalidator = useRevalidator();
   useEffect(() => {
+    const isSearchDev = /development=true/.test(window.location.search);
+    if (isSearchDev) isDev = isSearchDev;
     let retryTimeout: number;
     const connect = () => {
       const wsProtocol = window.location.protocol === "https:" ? "wss" : "ws";
