@@ -1,10 +1,12 @@
-import type { PinsType } from "types/map";
+import type { PinsObjectType } from "types/map";
 import {
   MapContainer,
   TileLayer,
   Marker,
   Popup,
   useMapEvents,
+  LayersControl,
+  LayerGroup,
 } from "react-leaflet";
 import { useEffect } from "react";
 import { useRevalidator } from "react-router";
@@ -25,10 +27,10 @@ function ClipboardMapClick() {
   });
   return null;
 }
+export default function RedClient({ pins }: { pins: PinsObjectType[] }) {
+  if (pins == null) throw { message: "情報の取得に失敗しました" };
 
-export default function RedClient({ pins }: { pins: PinsType[] }) {
   const revalidator = useRevalidator();
-
   useEffect(() => {
     const wsProtocol = window.location.protocol === "https:" ? "wss" : "ws";
     const ws = new WebSocket(
@@ -45,7 +47,36 @@ export default function RedClient({ pins }: { pins: PinsType[] }) {
     ws.onclose = () => console.log("🔌 WebSocket 切断");
     return () => ws.close();
   }, []);
-
+  const LayersControlList = pins.map(({ name, pins }, index) => {
+    const pinsList = pins.map(
+      ({ lat, lng, content, className, zIndexOffset }, i) => {
+        const icon = new Icon({
+          iconUrl: "/map/marker-icon.png",
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+          className: `${className}`,
+        });
+        return (
+          <Marker
+            key={`${lat},${lng}-${i}`}
+            position={[lat, lng]}
+            icon={icon}
+            zIndexOffset={zIndexOffset || 0}
+          >
+            {content && (
+              <Popup className="whitespace-pre-line">{content}</Popup>
+            )}
+          </Marker>
+        );
+      }
+    );
+    return (
+      <LayersControl.Overlay checked name={name} key={index}>
+        <LayerGroup>{pinsList}</LayerGroup>
+      </LayersControl.Overlay>
+    );
+  });
   return (
     <MapContainer
       center={[-128, 128]}
@@ -67,28 +98,7 @@ export default function RedClient({ pins }: { pins: PinsType[] }) {
         ]}
         attribution='<a href="https://rtalsoriangames.com/2025/01/15/cyberpunk-red-alert-january-2025-dlc-night-city-atlas/" target="_blank">R. Talsorian Games</a>'
       />
-      {/*<ClipboardMapClick />*/}
-      {pins.map(({ lat, lng, content, className, zIndexOffset }, i) => {
-        const icon = new Icon({
-          iconUrl: "/map/marker-icon.png",
-          iconSize: [25, 41],
-          iconAnchor: [12, 41],
-          popupAnchor: [1, -34],
-          className: `${className}`,
-        });
-        return (
-          <Marker
-            key={`${lat},${lng}-${i}`}
-            position={[lat, lng]}
-            icon={icon}
-            zIndexOffset={zIndexOffset || 0}
-          >
-            {content && (
-              <Popup className="whitespace-pre-line">{content}</Popup>
-            )}
-          </Marker>
-        );
-      })}
+      <LayersControl>{LayersControlList}</LayersControl>
     </MapContainer>
   );
 }
