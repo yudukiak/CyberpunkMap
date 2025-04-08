@@ -81,6 +81,10 @@ setInterval(() => {
     if (ws.isAlive === false) return ws.terminate();
     ws.isAlive = false;
     ws.ping();
+    // 明示的なメッセージ送信
+    if (ws.readyState === ws.OPEN) {
+      ws.send("keepalive");
+    }
   });
 }, 30 * 1000);
 
