@@ -114,9 +114,17 @@ else {
   console.log("🗂 静的ファイル（画像）を配信");
   app.use(express.static("public"));
   console.log("🗂 静的ファイル（マップ）を配信");
+  app.set('trust proxy', true);
   app.all(/.*/, async (req, res, next) => {
+    const ip = req.ip;
+    console.log('🌏アクセス元のIPアドレス:', ip)
     try {
-      return createRequestHandler({ build })(req, res, next);
+      return createRequestHandler({
+        build,
+        getLoadContext() {
+          return { ip };
+        },
+      })(req, res, next);
     } catch (err) {
       console.error("❌ SSRハンドラー内でエラー発生:", err);
       next(err);
