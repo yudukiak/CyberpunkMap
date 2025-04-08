@@ -8,38 +8,25 @@ import {
   LayersControl,
   LayerGroup,
 } from "react-leaflet";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRevalidator } from "react-router";
 import { CRS, Icon } from "leaflet";
 
-let isDev = import.meta.env.MODE === "development";
-const consoleLog = (...args: any[]) => isDev && console.log(...args);
-const consoleError = (...args: any[]) => isDev && console.error(...args);
-const consoleWarn = (...args: any[]) => isDev && console.warn(...args);
-
 const wsPort = import.meta.env.VITE_SERVER_PORT;
-
-function ClipboardMapClick() {
-  useMapEvents({
-    click(e) {
-      const { lat, lng } = e.latlng;
-      const coords = `${lat}, ${lng}`;
-      navigator.clipboard
-        .writeText(coords)
-        .then(() => consoleLog(`📋 コピーしました: ${coords}`))
-        .catch((err) => consoleError("❌ コピーに失敗しました", err));
-    },
-  });
-  return null;
-}
 
 export default function RedClient({ pins }: { pins: PinsObjectType[] }) {
   if (pins == null) throw { message: "情報の取得に失敗しました" };
 
+  // デバッグ
+  const [isDev, setIsDev] = useState(import.meta.env.MODE === "development");
+  const consoleLog = (...args: any[]) => isDev && console.log(...args);
+  const consoleError = (...args: any[]) => isDev && console.error(...args);
+  const consoleWarn = (...args: any[]) => isDev && console.warn(...args);
+
   const revalidator = useRevalidator();
   useEffect(() => {
     const isSearchDev = /development=true/.test(window.location.search);
-    if (isSearchDev) isDev = isSearchDev;
+    if (isSearchDev) setIsDev(true);
     let retryTimeout: number;
     const connect = () => {
       const wsProtocol = window.location.protocol === "https:" ? "wss" : "ws";
@@ -68,6 +55,21 @@ export default function RedClient({ pins }: { pins: PinsObjectType[] }) {
     connect();
     return () => clearTimeout(retryTimeout);
   }, []);
+
+  function ClipboardMapClick() {
+    useMapEvents({
+      click(e) {
+        const { lat, lng } = e.latlng;
+        const coords = `${lat}, ${lng}`;
+        navigator.clipboard
+          .writeText(coords)
+          .then(() => consoleLog(`📋 コピーしました: ${coords}`))
+          .catch((err) => consoleError("❌ コピーに失敗しました", err));
+      },
+    });
+    return null;
+  }
+
   const LayersControlList = pins.map(({ name, pins }, index) => {
     const pinsList = pins.map(
       ({ lat, lng, content, className, zIndexOffset }, i) => {
