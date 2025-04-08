@@ -13,7 +13,9 @@ import { useRevalidator } from "react-router";
 import { CRS, Icon } from "leaflet";
 import { isDevelopment, debugLog } from "~/utilities/debugLog";
 
-const wsPort = import.meta.env.VITE_SERVER_PORT;
+const MODE = import.meta.env.MODE;
+const PORT = import.meta.env.VITE_SERVER_PORT;
+const vsPort = MODE === "development" ? `:${PORT}` : null;
 
 export default function RedClient({ pins }: { pins: PinsObjectType[] }) {
   if (pins == null) throw { message: "情報の取得に失敗しました" };
@@ -23,8 +25,10 @@ export default function RedClient({ pins }: { pins: PinsObjectType[] }) {
     let retryTimeout: number;
     const connect = () => {
       const wsProtocol = window.location.protocol === "https:" ? "wss" : "ws";
+      const wlPort = window.location.port;
+      const wsPort = vsPort ? vsPort : wlPort === "" ? "" : `:${wlPort}`;
       const ws = new WebSocket(
-        `${wsProtocol}://${window.location.hostname}:${wsPort}`
+        `${wsProtocol}://${window.location.hostname}${wsPort}/ws`
       );
       ws.onopen = () => {
         debugLog("✅ WebSocket 接続成功");
@@ -35,7 +39,10 @@ export default function RedClient({ pins }: { pins: PinsObjectType[] }) {
           debugLog("🔁 WebSocket updated受信");
           revalidator.revalidate();
         } else if (data === "keepalive") {
-          debugLog("📡 WebSocket keepalive受信", new Date().toLocaleString('ja-JP'));
+          debugLog(
+            "📡 WebSocket keepalive受信",
+            new Date().toLocaleString("ja-JP")
+          );
         }
       };
       ws.onclose = () => {
