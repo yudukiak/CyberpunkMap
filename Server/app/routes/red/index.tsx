@@ -97,7 +97,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   }
 }
 
-export default function Red({ loaderData }: { loaderData: loaderData }) {
+export default function Index({ loaderData }: { loaderData: loaderData }) {
   const { pins, error } = loaderData;
   if (error) return <ErrorBoundary />
 
