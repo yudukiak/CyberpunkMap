@@ -17,7 +17,7 @@ const MODE = import.meta.env.MODE;
 const PORT = import.meta.env.VITE_SERVER_PORT;
 const vsPort = MODE === "development" ? `:${PORT}` : null;
 
-export default function RedClient({ pins }: { pins: PinsObjectType[] }) {
+export default function Map({ pins }: { pins: PinsObjectType[] }) {
   if (pins == null) throw { message: "情報の取得に失敗しました" };
 
   const revalidator = useRevalidator();

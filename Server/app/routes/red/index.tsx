@@ -1,4 +1,4 @@
-import type { Route } from "./+types/red";
+import type { Route } from "./+types/index";
 import type { loaderData } from "types/map";
 import { Suspense, useState, useEffect } from "react";
 import { Await } from "react-router";
@@ -104,7 +104,7 @@ export default function Red({ loaderData }: { loaderData: loaderData }) {
   // クライアントでのみ Leaflet を読み込む
   const [RedClient, setRedClient] = useState<React.FC<any> | null>(null);
   useEffect(() => {
-    import("./RedClient").then((mod) => {
+    import("./Map").then((mod) => {
       setRedClient(() => mod.default);
     });
   }, []);
