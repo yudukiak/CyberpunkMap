@@ -69,6 +69,21 @@ db.on("notification", (msg) => {
   }
 });
 
+// WebSocket 接続管理（ping/pong）
+wss.on("connection", (ws) => {
+  ws.isAlive = true;
+  ws.on("pong", () => ws.isAlive = true);
+  ws.on("message", (msg) => console.log("📨 WebSocketメッセージ:", msg.toString()));
+});
+// WebSocketが切断するため30秒ごとにping送信
+setInterval(() => {
+  wss.clients.forEach((ws) => {
+    if (ws.isAlive === false) return ws.terminate();
+    ws.isAlive = false;
+    ws.ping();
+  });
+}, 30 * 1000);
+
 // devモードでは、WebSocketサーバーを単独で起動
 if (isDev) {
   console.log(`✅ WebSocket専用モード起動 → ws://localhost:${PORT}`);

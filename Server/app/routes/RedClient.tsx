@@ -38,20 +38,33 @@ export default function RedClient({ pins }: { pins: PinsObjectType[] }) {
 
   const revalidator = useRevalidator();
   useEffect(() => {
-    const wsProtocol = window.location.protocol === "https:" ? "wss" : "ws";
-    const ws = new WebSocket(
-      `${wsProtocol}://${window.location.hostname}:${wsPort}`
-    );
-    ws.onopen = () => consoleLog("✅ WebSocket 接続成功");
-    ws.onmessage = (event) => {
-      if (event.data === "red_map_updated") {
-        consoleLog("🔁 ピン更新通知受信 → 再取得！");
-        revalidator.revalidate();
-      }
+    let retryTimeout: number;
+    const connect = () => {
+      const wsProtocol = window.location.protocol === "https:" ? "wss" : "ws";
+      const ws = new WebSocket(
+        `${wsProtocol}://${window.location.hostname}:${wsPort}`
+      );
+      ws.onopen = () => {
+        consoleLog("✅ WebSocket 接続成功");
+      };
+
+      ws.onmessage = (event) => {
+        if (event.data === "red_map_updated") {
+          consoleLog("🔁 ピン更新通知受信 → 再取得！");
+          revalidator.revalidate();
+        }
+      };
+      ws.onclose = () => {
+        consoleWarn("⏸️ WebSocket 切断 → 再接続します");
+        retryTimeout = window.setTimeout(connect, 3000);
+      };
+      ws.onerror = (err) => {
+        consoleError("❌ WebSocket エラー:", err);
+        ws.close(); // 自動で再接続される
+      };
     };
-    ws.onerror = (err) => consoleWarn("🟥 WebSocket エラー:", err);
-    ws.onclose = () => consoleLog("⏸️ WebSocket 切断");
-    return () => ws.close();
+    connect();
+    return () => clearTimeout(retryTimeout);
   }, []);
   const LayersControlList = pins.map(({ name, pins }, index) => {
     const pinsList = pins.map(
