@@ -11,22 +11,15 @@ import {
 import { useEffect, useState } from "react";
 import { useRevalidator } from "react-router";
 import { CRS, Icon } from "leaflet";
+import { isDevelopment, debugLog } from "~/utilities/debugLog";
 
 const wsPort = import.meta.env.VITE_SERVER_PORT;
 
 export default function RedClient({ pins }: { pins: PinsObjectType[] }) {
   if (pins == null) throw { message: "情報の取得に失敗しました" };
 
-  // デバッグ
-  const [isDev, setIsDev] = useState(import.meta.env.MODE === "development");
-  const consoleLog = (...args: any[]) => isDev && console.log(...args);
-  const consoleError = (...args: any[]) => isDev && console.error(...args);
-  const consoleWarn = (...args: any[]) => isDev && console.warn(...args);
-
   const revalidator = useRevalidator();
   useEffect(() => {
-    const isSearchDev = /development=true/.test(window.location.search);
-    if (isSearchDev) setIsDev(true);
     let retryTimeout: number;
     const connect = () => {
       const wsProtocol = window.location.protocol === "https:" ? "wss" : "ws";
@@ -34,21 +27,23 @@ export default function RedClient({ pins }: { pins: PinsObjectType[] }) {
         `${wsProtocol}://${window.location.hostname}:${wsPort}`
       );
       ws.onopen = () => {
-        consoleLog("✅ WebSocket 接続成功");
+        debugLog("✅ WebSocket 接続成功");
       };
-
       ws.onmessage = (event) => {
-        if (event.data === "red_map_updated") {
-          consoleLog("🔁 ピン更新通知受信 → 再取得！");
+        const { data } = event;
+        if (data === "red_map_updated") {
+          debugLog("🔁 WebSocket updated受信");
           revalidator.revalidate();
+        } else if (data === "keepalive") {
+          debugLog("📡 WebSocket keepalive受信", new Date().toLocaleString('ja-JP'));
         }
       };
       ws.onclose = () => {
-        consoleWarn("⏸️ WebSocket 切断 → 再接続します");
+        debugLog("⏸️ WebSocket 切断 → 再接続します");
         retryTimeout = window.setTimeout(connect, 3000);
       };
       ws.onerror = (err) => {
-        consoleError("❌ WebSocket エラー:", err);
+        debugLog("❌ WebSocket エラー:", err);
         ws.close(); // 自動で再接続される
       };
     };
@@ -59,12 +54,13 @@ export default function RedClient({ pins }: { pins: PinsObjectType[] }) {
   function ClipboardMapClick() {
     useMapEvents({
       click(e) {
+        if (!isDevelopment()) return null;
         const { lat, lng } = e.latlng;
         const coords = `${lat}, ${lng}`;
         navigator.clipboard
           .writeText(coords)
-          .then(() => consoleLog(`📋 コピーしました: ${coords}`))
-          .catch((err) => consoleError("❌ コピーに失敗しました", err));
+          .then(() => console.log(`📋 コピーしました: ${coords}`))
+          .catch((err) => console.error("❌ コピーに失敗しました", err));
       },
     });
     return null;
@@ -121,7 +117,7 @@ export default function RedClient({ pins }: { pins: PinsObjectType[] }) {
         ]}
         attribution='<a href="https://rtalsoriangames.com/2025/01/15/cyberpunk-red-alert-january-2025-dlc-night-city-atlas/" target="_blank">R. Talsorian Games</a>'
       />
-      {isDev && <ClipboardMapClick />}
+      <ClipboardMapClick />
       <LayersControl>{LayersControlList}</LayersControl>
     </MapContainer>
   );
