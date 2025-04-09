@@ -1,4 +1,4 @@
-import type { Route } from "./+types/index";
+import type { Route } from "./+types/team";
 import type { loaderData } from "types/map";
 import { Suspense, useState, useEffect } from "react";
 import { Await } from "react-router";
@@ -29,7 +29,7 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-export async function loader({ request }: Route.LoaderArgs) {
+export async function loader({ params }: Route.LoaderArgs) {
   const { Client } = pkg;
   const options = {
     user: import.meta.env.VITE_DB_USER,
@@ -38,6 +38,8 @@ export async function loader({ request }: Route.LoaderArgs) {
     database: import.meta.env.VITE_DB_NAME,
     password: import.meta.env.VITE_DB_PASS,
   };
+  // パラメータを取得
+ const {teamId} = params;
   // DB接続
   const db = new Client(options);
   // 返却データ
@@ -53,6 +55,36 @@ export async function loader({ request }: Route.LoaderArgs) {
       className: pinColor.gray,
     }));
     pins.push({ name: "ルールブック", pins: rulebookMap });
+    if (teamId === null) return { pins, error: null };
+
+    // パラメータからteam情報を取得
+    const teamRes = await db.query(
+      `SELECT id, name FROM red_team WHERE is_public = true AND key = $1 LIMIT 1;`,
+      [teamId]
+    );
+    const team = teamRes.rows[0];
+    if (team == null) return { pins, error: null };
+
+    // team情報からmap情報を取得
+    const teamMapRes = await db.query(
+      `SELECT lat, lng, content, tags FROM red_map WHERE is_public = true AND $1 = ANY(team_ids);`,
+      [team.id]
+    );
+    const teamMap = teamMapRes.rows.map((row) => {
+      const { tags } = row;
+      let className = pinColor.gray;
+      let zIndexOffset = 0;
+      if (tags.includes("location")) {
+        className = pinColor.blue;
+        zIndexOffset = 10000;
+      }
+      if (tags.includes("event")) {
+        className = pinColor.red;
+        zIndexOffset = 10000;
+      }
+      return { ...row, className, zIndexOffset };
+    });
+    pins.push({ name: "team.name", pins: teamMap });
     // データ返却
     return { pins, error: null };
   } catch (error) {
