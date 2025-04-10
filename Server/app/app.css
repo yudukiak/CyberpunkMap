@@ -9,12 +9,6 @@
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
-html,
-body,
-#map {
-  background: #1e1e29;
-}
-
 #map {
   .leaflet-popup-content-wrapper {
     border-radius: 0.5rem;

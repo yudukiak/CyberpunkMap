@@ -43,7 +43,7 @@ export default function Index({ loaderData }: Route.ComponentProps) {
   console.log("👘 - index.tsx - Index - loaderData:", loaderData);
   const { rows, error } = loaderData;
   return (
-    <main className="bg-white">
+    <main>
       <DataTable columns={columns} data={rows as Payment[]} />
     </main>
   );

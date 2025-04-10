@@ -111,7 +111,8 @@ export default function Map({ pins }: { pins: PinsObjectType[] }) {
       maxZoom={6}
       scrollWheelZoom={true}
       crs={CRS.Simple}
-      className="h-screen w-screen"
+      className="h-dvh w-dvw"
+      style={{background: "#1e1e29"}}
       id="map"
     >
       <TileLayer
