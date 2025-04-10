@@ -38,26 +38,16 @@ export default function Index({ loaderData }: loaderData) {
   if (error) return <ErrorBoundary />;
 
   // クライアントでのみ Leaflet を読み込む
-  const [RedClient, setRedClient] = useState<React.FC<any> | null>(null);
+  const [Map, setMap] = useState<React.FC<any> | null>(null);
   useEffect(() => {
     import("./Map").then((mod) => {
-      setRedClient(() => mod.default);
+      setMap(() => mod.default);
     });
   }, []);
 
-  return (
-    <main>
-      {RedClient ? (
-        <Suspense fallback={<Loading />}>
-          <Await resolve={pins}>
-            <RedClient pins={pins} />
-          </Await>
-        </Suspense>
-      ) : (
-        <Loading />
-      )}
-    </main>
-  );
+  // マップを描写する？
+  const isReady = pins && Map;
+  return <main>{isReady ? <Map pins={pins} /> : <Loading />}</main>;
 }
 
 export function ErrorBoundary() {
