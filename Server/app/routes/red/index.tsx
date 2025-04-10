@@ -6,6 +6,7 @@ import { HumanDinosaur } from "react-kawaii";
 import { connectDb, fetchRulebookPins } from "~/utilities/pinLoader";
 import Error from "./Error";
 import Loading from "./Loading";
+import Common from "./Common";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -36,18 +37,7 @@ export async function loader() {
 export default function Index({ loaderData }: loaderData) {
   const { pins, error } = loaderData;
   if (error) return <ErrorBoundary />;
-
-  // クライアントでのみ Leaflet を読み込む
-  const [Map, setMap] = useState<React.FC<any> | null>(null);
-  useEffect(() => {
-    import("./Map").then((mod) => {
-      setMap(() => mod.default);
-    });
-  }, []);
-
-  // マップを描写する？
-  const isReady = pins && Map;
-  return <main>{isReady ? <Map pins={pins} /> : <Loading />}</main>;
+  return <Common pins={pins}/>
 }
 
 export function ErrorBoundary() {

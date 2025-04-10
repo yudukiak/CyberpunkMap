@@ -1,15 +1,12 @@
 import type { Route } from "./+types/team";
 import type { loaderData } from "types/map";
-import { Suspense, useState, useEffect } from "react";
-import { Await } from "react-router";
-import { HumanDinosaur } from "react-kawaii";
 import {
   connectDb,
   fetchRulebookPins,
   fetchTeamPins,
 } from "~/utilities/pinLoader";
 import Error from "./Error";
-import Loading from "./Loading";
+import Common from "./Common";
 
 export function meta({ data }: Route.MetaArgs) {
   const title = [data.title, "Cyberpunk RED Map"].filter(Boolean).join(" - ");
@@ -52,21 +49,7 @@ export async function loader({ params }: Route.LoaderArgs) {
 export default function Index({ loaderData }: loaderData) {
   const { pins, error } = loaderData;
   if (error) return <ErrorBoundary />;
-
-  // クライアントでのみ Leaflet を読み込む
-  const [Map, setMap] = useState<React.FC<any> | null>(null);
-  useEffect(() => {
-    import("./Map").then((mod) => {
-      setMap(() => mod.default);
-    });
-  }, []);
-
-  // マップを描写する？
-  const isReady = pins && Map
-
-  return (
-    <main>{isReady ? <Map pins={pins} /> : <Loading />}</main>
-  );
+  return <Common pins={pins}/>
 }
 
 export function ErrorBoundary() {
