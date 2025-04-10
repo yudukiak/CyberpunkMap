@@ -8,7 +8,7 @@ import {
   LayersControl,
   LayerGroup,
 } from "react-leaflet";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRevalidator } from "react-router";
 import { CRS, Icon } from "leaflet";
 import { isDevelopment, debugLog } from "~/utilities/debugLog";
