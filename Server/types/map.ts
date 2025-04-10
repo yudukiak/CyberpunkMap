@@ -10,9 +10,12 @@ export type PinsType = {
 export type PinsObjectType = {
   name: string;
   pins: PinsType[];
-}
+};
 
 export type loaderData = {
-  error: string | null;
-  pins: PinsObjectType[];
-}
+  loaderData: {
+    pins: PinsObjectType[];
+    title: string | null;
+    error: string | null;
+  };
+};
