@@ -1,11 +1,7 @@
 import type { Route } from "./+types/index";
 import type { loaderData } from "types/map";
-import { Suspense, useState, useEffect } from "react";
-import { Await } from "react-router";
-import { HumanDinosaur } from "react-kawaii";
 import { connectDb, fetchRulebookPins } from "~/utilities/pinLoader";
-import Error from "./Error";
-import Loading from "./Loading";
+import Error from "~/views/Error";
 import Common from "./Common";
 
 export function meta({}: Route.MetaArgs) {

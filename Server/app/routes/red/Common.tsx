@@ -1,6 +1,6 @@
 import type { PinsObjectType } from "types/map";
 import { useState, useEffect } from "react";
-import Loading from "./Loading";
+import Loading from "~/views/Loading";
 
 export default function Common({ pins }: { pins: PinsObjectType[] }) {
   // クライアントでのみ Leaflet を読み込む

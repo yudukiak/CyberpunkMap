@@ -5,7 +5,7 @@ import {
   fetchRulebookPins,
   fetchTeamPins,
 } from "~/utilities/pinLoader";
-import Error from "./Error";
+import Error from "~/views/Error";
 import Common from "./Common";
 
 export function meta({ data }: Route.MetaArgs) {
