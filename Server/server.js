@@ -6,6 +6,7 @@ import path from "path";
 import { createRequestHandler } from "@react-router/express";
 import { WebSocketServer } from "ws";
 import pkg from "pg";
+import geoip from "geoip-lite";
 import 'dotenv/config';
 
 const app = express();
@@ -109,12 +110,46 @@ else {
     process.exit(1);
   }
 
-  console.log("🗂 静的ファイル（JS/CSS）を配信");
-  app.use(express.static("build/client"));
-  console.log("🗂 静的ファイル（画像）を配信");
-  app.use(express.static("public"));
-  console.log("🗂 静的ファイル（マップ）を配信");
+  // ① Express設定
   app.set('trust proxy', true);
+  // ② 静的ファイル
+  app.use(express.static("build/client"));
+  app.use(express.static("public"));
+  // 日本以外をブロックするミドルウェアを追加
+  app.use(async (req, res, next) => {
+    const reqCfConnectingIp = req.headers['cf-connecting-ip'];
+    const reqIp = req.ip;
+    const ip = reqCfConnectingIp || reqIp;
+    // 許可IP
+    const allowedIpsStr = process.env.VITE_ALLOWED_IPS;
+    const allowedIps = (allowedIpsStr || "").split(",");
+    const isIncludesIp = allowedIps.includes(ip);
+    // 許可IP以外は国判定
+    if (!isIncludesIp) {
+      const geo = geoip.lookup(ip);
+      const country = geo ? geo.country : 'UNKNOWN';
+      try {
+        await db.query(
+          `
+          INSERT INTO access_logs (ip, country, last_access, access_count)
+          VALUES ($1, $2, CURRENT_TIMESTAMP, 1)
+          ON CONFLICT (ip) DO UPDATE SET
+            country = EXCLUDED.country,
+            last_access = CURRENT_TIMESTAMP,
+            access_count = access_logs.access_count + 1;
+          `,
+          [ip, country]
+        );
+      } catch (err) {
+        console.error("❌ アクセスログ記録エラー:", err);
+      }
+      if (geo.country !== 'JP') {
+        console.log(`🚫 アクセス拒否（${geo}）\nIP: ${reqCfConnectingIp} / ${reqIp}`);
+        return res.status(403).send('アクセスが禁止されています');
+      }
+    }
+    next();
+  });
   app.all(/.*/, async (req, res, next) => {
     const ip = req.ip;
     console.log('🌏アクセス元のIPアドレス:', ip)
