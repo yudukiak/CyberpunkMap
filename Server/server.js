@@ -159,7 +159,7 @@ else {
       return createRequestHandler({
         build,
         getLoadContext() {
-          return { ip };
+          return { reqIp };
         },
       })(req, res, next);
     } catch (err) {
