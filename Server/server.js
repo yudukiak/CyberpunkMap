@@ -116,10 +116,13 @@ else {
   app.use(express.static("build/client"));
   app.use(express.static("public"));
   // 日本以外をブロックするミドルウェアを追加
+  let reqHeadersIP = "";
+  let reqIp = "";
+  let country = "";
   app.use(async (req, res, next) => {
-    const reqCfConnectingIp = req.headers['cf-connecting-ip'];
-    const reqIp = req.ip;
-    const ip = reqCfConnectingIp || reqIp;
+    reqHeadersIP = req.headers['cf-connecting-ip'];
+    reqIp = req.ip;
+    const ip = reqHeadersIP || reqIp;
     // 許可IP
     const allowedIpsStr = process.env.VITE_ALLOWED_IPS;
     const allowedIps = (allowedIpsStr || "").split(",");
@@ -127,7 +130,7 @@ else {
     // 許可IP以外は国判定
     if (!isIncludesIp) {
       const geo = geoip.lookup(ip);
-      const country = geo ? geo.country : 'UNKNOWN';
+      country = geo ? geo.country : 'UNKNOWN';
       try {
         await db.query(
           `
@@ -144,15 +147,14 @@ else {
         console.error("❌ アクセスログ記録エラー:", err);
       }
       if (geo.country !== 'JP') {
-        console.log(`🚫 アクセス拒否（${geo}）\nIP: ${reqCfConnectingIp} / ${reqIp}`);
+        console.log(`🚫 アクセス拒否\n🌏国: ${country}\n🌐IP: ${reqHeadersIP} / ${reqIp}`);
         return res.status(403).send('アクセスが禁止されています');
       }
     }
     next();
   });
   app.all(/.*/, async (req, res, next) => {
-    const ip = req.ip;
-    console.log('🌏アクセス元のIPアドレス:', ip)
+    console.log(`🟢 アクセス許可\n🌏国: ${country}\n🌐IP: ${reqHeadersIP} / ${reqIp}`);
     try {
       return createRequestHandler({
         build,
