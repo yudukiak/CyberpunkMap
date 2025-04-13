@@ -49,7 +49,11 @@ export async function loader({ params }: Route.LoaderArgs) {
 export default function Index({ loaderData }: loaderData) {
   const { pins, error } = loaderData;
   if (error) return <ErrorBoundary />;
-  return <Common pins={pins}/>
+  return (
+    <main className="h-dvh w-dvw">
+      <Common pins={pins} />
+    </main>
+  );
 }
 
 export function ErrorBoundary() {

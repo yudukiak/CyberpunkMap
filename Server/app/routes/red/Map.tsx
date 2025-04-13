@@ -111,7 +111,7 @@ export default function Map({ pins }: { pins: PinsObjectType[] }) {
       maxZoom={6}
       scrollWheelZoom={true}
       crs={CRS.Simple}
-      className="h-dvh w-dvw"
+      className="h-full w-full"
       style={{background: "#1e1e29"}}
       id="map"
     >

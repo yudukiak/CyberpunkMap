@@ -8,9 +8,5 @@ export default function Common({ pins }: { pins: PinsObjectType[] }) {
   useEffect(() => {
     import("./Map").then((mod) => setMap(() => mod.default));
   }, []);
-  return (
-    <main>
-      {Map ? <Map pins={pins} /> : <Loading />}
-    </main>
-  );
+  return Map ? <Map pins={pins} /> : <Loading />;
 }
