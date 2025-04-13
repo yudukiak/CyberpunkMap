@@ -26,6 +26,14 @@ function getDbOptions() {
   };
 }
 
+export async function fetchAllTeam(db: pkg.Client) {
+  const teamsRes = await db.query(`
+    SELECT * FROM public.red_team
+    ORDER BY id ASC
+  `);
+  return teamsRes.rows;
+}
+
 export async function fetchRulebookPins(db: pkg.Client) {
   // rulebook_idsがあるmap情報を取得
   const res = await db.query(`
@@ -39,7 +47,12 @@ export async function fetchRulebookPins(db: pkg.Client) {
   }));
 }
 
-export async function fetchTeamPins(db: pkg.Client, key: string) {
+export async function fetchTeamPins(
+  db: pkg.Client,
+  key: string,
+  flag?: string
+) {
+  const isAdmin = flag === "admin";
   // team情報を取得
   const teamRes = await db.query(
     `SELECT id, name FROM red_team WHERE is_public = true AND key = $1 LIMIT 1;`,
@@ -48,10 +61,12 @@ export async function fetchTeamPins(db: pkg.Client, key: string) {
   const team = teamRes.rows[0];
   if (!team) return null;
   // team.idからmap情報を取得
-  const mapRes = await db.query(
-    `SELECT lat, lng, content, tags FROM red_map WHERE is_public = true AND $1 = ANY(team_ids);`,
-    [team.id]
-  );
+  const mapQuery = isAdmin
+    ? // 管理者は全て返却
+      `SELECT lat, lng, content, tags, is_public FROM red_map WHERE $1 = ANY(team_ids);`
+    : // 一般者は公開のみ返却
+      `SELECT lat, lng, content, tags FROM red_map WHERE is_public = true AND $1 = ANY(team_ids);`;
+  const mapRes = await db.query(mapQuery, [team.id]);
   // 返却用データを作成
   const pins = mapRes.rows.map((row) => {
     let className = pinColor.gray;
@@ -63,6 +78,10 @@ export async function fetchTeamPins(db: pkg.Client, key: string) {
     if (row.tags.includes("event")) {
       className = pinColor.red;
       zIndexOffset = 10000;
+    }
+    if (row.is_public === false) {
+      className += " brightness-50";
+      delete row.is_public;
     }
     return { ...row, className, zIndexOffset };
   });
