@@ -8,7 +8,7 @@ import { teamColumns } from "./TeamColums";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Cyberpunk RED Map" },
+    { title: "チーム編集 - Cyberpunk RED Map" },
     { name: "description", content: "Welcome to React Router!" },
   ];
 }
@@ -44,6 +44,11 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   } finally {
     await db.end().catch((e) => console.error("⚠️", e));
   }
+}
+
+export async function action({ request }: Route.ActionArgs) {
+  const formData = await request.formData();
+  console.log("👘 - team.tsx - action - formData:", formData);
 }
 
 export default function Index({ loaderData }: { loaderData: LoaderData }) {

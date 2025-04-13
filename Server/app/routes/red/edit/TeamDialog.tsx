@@ -14,6 +14,7 @@ import { Switch } from "@/components/ui/switch";
 
 import { Pencil } from "lucide-react";
 
+import { Form } from "react-router";
 import type { RedTeam, RedMap } from "types/edit";
 type data = {
   data: RedTeam | RedMap;
@@ -32,12 +33,12 @@ export default function TeamDialog({ data }: data) {
           <DialogTitle>編集</DialogTitle>
           <DialogDescription>チームの編集を行います。</DialogDescription>
         </DialogHeader>
-        <form>
+        <Form method="post">
           <TeamForm data={data as RedTeam} />
           <Button type="submit" className="block m-auto">
             Save changes
           </Button>
-        </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );
@@ -48,30 +49,50 @@ function TeamForm({ data }: { data: RedTeam }) {
   return (
     <>
       <div className="grid gap-4 py-4">
-        <Input name="id" defaultValue={id} type="hidden"></Input>
+        <Input name="id" defaultValue={id} type="hidden" />
+
         <div className="h-9 grid grid-cols-4 items-center gap-4">
           <Label htmlFor="name" className="text-right">
             公開設定
           </Label>
           <Switch id="is_public" defaultChecked={is_public} />
         </div>
+
         <div className="h-9 grid grid-cols-4 items-center gap-4">
           <Label htmlFor="key" className="text-right">
             チームID
           </Label>
-          <Input id="key" defaultValue={key} className="col-span-3" />
+          <Input
+            id="key"
+            name="key"
+            defaultValue={key}
+            className="col-span-3"
+          />
         </div>
+
         <div className="h-9 grid grid-cols-4 items-center gap-4">
           <Label htmlFor="name" className="text-right">
             チーム名
           </Label>
-          <Input id="name" defaultValue={name} className="col-span-3" />
+          <Input
+            id="name"
+            name="name"
+            defaultValue={name}
+            className="col-span-3"
+          />
         </div>
+
         <div className="h-9 grid grid-cols-4 items-center gap-4">
           <Label htmlFor="member_ids" className="text-right">
             メンバーID
           </Label>
-          <div className="col-span-3">
+          <Input
+            id="member_ids"
+            name="member_ids"
+            defaultValue={JSON.stringify(member_ids)}
+            className="col-span-3"
+          />
+          {/*<div className="col-span-3">
             {member_ids.map((member_id) => {
               return (
                 <Input
@@ -81,7 +102,7 @@ function TeamForm({ data }: { data: RedTeam }) {
                 />
               );
             })}
-          </div>
+          </div>*/}
         </div>
       </div>
     </>
