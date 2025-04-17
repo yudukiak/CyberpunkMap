@@ -111,7 +111,7 @@ export default function MapId({ loaderData }: Route.ComponentProps) {
       open={true}
       onOpenChange={(open) => {
         if (!open) {
-          navigate("/red/edit/map/");
+          navigate("/red/edit/map/", { preventScrollReset: true });
         }
       }}
     >
