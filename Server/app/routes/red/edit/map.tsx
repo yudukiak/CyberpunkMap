@@ -51,9 +51,7 @@ export default function Index({ loaderData }: { loaderData: LoaderData }) {
   if (error) return <ErrorBoundary />;
   return (
     <div className="p-4">
-      <div className="overflow-hidden">
-        <DataTable columns={mapColumns} data={redMap} />
-      </div>
+      <DataTable columns={mapColumns} data={redMap} />
       <Outlet />
     </div>
   );
