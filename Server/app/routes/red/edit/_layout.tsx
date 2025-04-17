@@ -10,7 +10,7 @@ import {
 import { ipMatches } from "~/utilities/ipFilter";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
-  const ip = context?.ip as string;
+  const ip = context?.reqIp as string;
   const isAdmin = ipMatches(ip);
   console.log("👘 - _layout.tsx - loader - context:", context);
   console.log("👘 - _layout.tsx - loader - isAdmin:", isAdmin);
