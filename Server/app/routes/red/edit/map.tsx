@@ -47,7 +47,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
 }
 
 export default function Index({ loaderData }: { loaderData: LoaderData }) {
-  const { team, redMap, error } = loaderData;
+  const { redMap, error } = loaderData;
   if (error) return <ErrorBoundary />;
   return (
     <div className="p-4">
