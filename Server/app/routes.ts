@@ -10,8 +10,12 @@ export default [
     ...prefix("edit", [
       layout("routes/red/edit/_layout.tsx", [
         index("routes/red/edit/index.tsx"),
-        route("team", "routes/red/edit/team.tsx"),
-        route("map", "routes/red/edit/map.tsx"),
+        route("team", "routes/red/edit/team.tsx", [
+          route(":teamId", "routes/red/edit/teamId.tsx"),
+        ]),
+        route("map", "routes/red/edit/map.tsx", [
+          route(":mapId", "routes/red/edit/mapId.tsx"),
+        ]),
       ]),
     ])
   ]),

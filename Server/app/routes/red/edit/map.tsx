@@ -1,8 +1,8 @@
 import type { Route } from "./+types/index";
 import type { LoaderData } from "types/edit";
+import { Outlet } from "react-router";
 import pkg from "pg";
 import Error from "~/views/Error";
-
 import { DataTable } from "./DataTable";
 import { mapColumns } from "./MapColums";
 
@@ -46,17 +46,15 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   }
 }
 
-export async function action({ request }: Route.ActionArgs) {
-  const formData = await request.formData();
-  console.log("👘 - map.tsx - action - formData:", formData);
-}
-
 export default function Index({ loaderData }: { loaderData: LoaderData }) {
   const { team, redMap, error } = loaderData;
   if (error) return <ErrorBoundary />;
   return (
     <div className="p-4">
-      <DataTable columns={mapColumns} data={redMap} />
+      <div className="overflow-hidden">
+        <DataTable columns={mapColumns} data={redMap} />
+      </div>
+      <Outlet />
     </div>
   );
 }

@@ -1,6 +1,8 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import type { RedTeam } from "types/edit";
-import TeamDialog from "./TeamDialog";
+import { Pencil } from "lucide-react";
+import { buttonVariants } from "@/components/ui/button";
+import { Link } from "react-router";
 
 export const teamColumns: ColumnDef<RedTeam>[] = [
   {
@@ -17,6 +19,14 @@ export const teamColumns: ColumnDef<RedTeam>[] = [
   },
   {
     id: "actions",
-    cell: ({ row }) => <TeamDialog data={row.original} />,
+    cell: ({ row }) => (
+      <Link
+        to={`/red/edit/team/${row.original.id}`}
+        className={buttonVariants({ variant: "outline" })}
+        preventScrollReset={true}
+      >
+        <Pencil className="h-4 w-4" />
+      </Link>
+    ),
   },
 ];

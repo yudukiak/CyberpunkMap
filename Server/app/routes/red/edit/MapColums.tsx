@@ -1,6 +1,8 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import type { RedMap } from "types/edit";
-import MapDialog from "./MapDialog";
+import { Pencil } from "lucide-react";
+import { buttonVariants } from "@/components/ui/button";
+import { Link } from "react-router";
 
 export const mapColumns: ColumnDef<RedMap>[] = [
   {
@@ -33,6 +35,14 @@ export const mapColumns: ColumnDef<RedMap>[] = [
   },
   {
     id: "actions",
-    cell: ({ row }) => <MapDialog data={row.original} />,
+    cell: ({ row }) => (
+      <Link
+        to={`/red/edit/map/${row.original.id}`}
+        className={buttonVariants({ variant: "outline" })}
+        preventScrollReset={true}
+      >
+        <Pencil className="h-4 w-4" />
+      </Link>
+    ),
   },
 ];
