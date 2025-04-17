@@ -20,7 +20,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
 const components: { title: string; href: string }[] = [
   {
     title: "Index",
-    href: "/red/edit/",
+    href: "/red/edit",
   },
   {
     title: "Team Edit",
@@ -40,7 +40,15 @@ export default function EditLayout() {
         <NavigationMenu>
           <NavigationMenuList>
             {components.map((component) => {
-              const isActive = location.pathname === component.href;
+              const isActive =
+                // 現在のパスがcomponent.hrefで始まり、他のcomponent.hrefが現在のパスで始まる場合はfalse
+                // 例: /red/edit/team と /red/edit/team/1 の場合は /red/edit/team がアクティブ
+                location.pathname.startsWith(component.href) &&
+                !components.some(
+                  (c) =>
+                    c.href.length > component.href.length &&
+                    location.pathname.startsWith(c.href)
+                );
               return (
                 <NavigationMenuItem key={component.title}>
                   <NavigationMenuLink
