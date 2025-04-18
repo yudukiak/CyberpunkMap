@@ -13,7 +13,6 @@ export function meta({ data }: Route.MetaArgs) {
   const title = ["すべて", "Cyberpunk RED Map"].filter(Boolean).join(" - ");
   return [
     { title },
-    { name: "description", content: "Welcome to React Router!" },
   ];
 }
 

@@ -9,7 +9,6 @@ import { teamColumns } from "./TeamColums";
 export function meta({}: Route.MetaArgs) {
   return [
     { title: "チーム編集 - Cyberpunk RED Map" },
-    { name: "description", content: "Welcome to React Router!" },
   ];
 }
 

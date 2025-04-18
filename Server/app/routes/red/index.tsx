@@ -7,7 +7,6 @@ import Common from "./Common";
 export function meta({}: Route.MetaArgs) {
   return [
     { title: "Cyberpunk RED Map" },
-    { name: "description", content: "Welcome to React Router!" },
   ];
 }
 
