@@ -3,7 +3,7 @@ module.exports = {
     {
       name: 'CyberpunkMap',
       script: './server.js',
-      cwd: __dirname,
+      cwd: new URL('.', import.meta.url).pathname,
     }
   ]
 }
