@@ -2,7 +2,7 @@ module.exports = {
   apps: [
     {
       name: 'CyberpunkMap',
-      script: './Server/server.js',
+      script: './server.js',
       cwd: __dirname,
     }
   ]
