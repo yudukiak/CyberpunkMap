@@ -123,38 +123,57 @@ else {
     reqHeadersIP = req.headers['cf-connecting-ip'];
     reqIp = req.ip;
     const ip = reqHeadersIP || reqIp;
+    // 国判定
+    const geo = geoip.lookup(ip);
+    country = geo ? geo.country : 'UNKNOWN';
+    try {
+      // IPごとの集計
+      await db.query(
+        `
+        INSERT INTO access_logs (ip, country, last_access, access_count)
+        VALUES ($1, $2, CURRENT_TIMESTAMP, 1)
+        ON CONFLICT (ip) DO UPDATE SET
+          country = EXCLUDED.country,
+          last_access = CURRENT_TIMESTAMP,
+          access_count = access_logs.access_count + 1;
+        `,
+        [ip, country]
+      );
+      // ヘッダーログの保存
+      const headers = req.headers;
+      await db.query(
+        `
+        INSERT INTO access_log_headers (
+          ip, user_agent, referer, origin, forwarded_for, auth_header, headers
+        ) VALUES (
+          $1, $2, $3, $4, $5, $6, $7
+        );
+        `,
+        [
+          ip,
+          headers['user-agent'] || null,
+          headers['referer'] || null,
+          headers['origin'] || null,
+          headers['x-forwarded-for'] || null,
+          headers['authorization'] || null,
+          JSON.stringify(headers),
+        ]
+      );
+    } catch (error) {
+      console.error("❌ アクセスログ記録エラー:", error);
+    }
     // 許可IP
     const allowedIpsStr = process.env.VITE_ALLOWED_IPS;
     const allowedIps = (allowedIpsStr || "").split(",");
     const isIncludesIp = allowedIps.includes(ip);
-    // 許可IP以外は国判定
-    if (!isIncludesIp) {
-      const geo = geoip.lookup(ip);
-      country = geo ? geo.country : 'UNKNOWN';
-      try {
-        await db.query(
-          `
-          INSERT INTO access_logs (ip, country, last_access, access_count)
-          VALUES ($1, $2, CURRENT_TIMESTAMP, 1)
-          ON CONFLICT (ip) DO UPDATE SET
-            country = EXCLUDED.country,
-            last_access = CURRENT_TIMESTAMP,
-            access_count = access_logs.access_count + 1;
-          `,
-          [ip, country]
-        );
-      } catch (err) {
-        console.error("❌ アクセスログ記録エラー:", err);
-      }
-      if (geo.country !== 'JP') {
-        console.log(`🚫 アクセス拒否\n🌏国: ${country}\n🌐IP: ${reqHeadersIP} / ${reqIp}`);
-        return res.status(403).send('アクセスが禁止されています');
-      }
-    }
+    //if (geo.country !== 'JP') {
+    //  console.log(`🚫 アクセス拒否\n🌏国: ${country}\n🌐IP: ${reqHeadersIP} / ${reqIp}`);
+    //  return res.status(403).send('アクセスが禁止されています');
+    //}
+    console.log(`🟢 アクセス許可\n🌏国: ${country}\n🌐IP: ${reqHeadersIP} / ${reqIp}`);
     next();
   });
   app.all(/.*/, async (req, res, next) => {
-    console.log(`🟢 アクセス許可\n🌏国: ${country}\n🌐IP: ${reqHeadersIP} / ${reqIp}`);
     try {
       return createRequestHandler({
         build,
