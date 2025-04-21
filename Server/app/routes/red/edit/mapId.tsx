@@ -13,6 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Toaster } from "@/components/ui/sonner";
@@ -180,11 +181,11 @@ function MapForm({ data }: { data: RedMap }) {
           />
         </div>
 
-        <div className="h-9 grid grid-cols-4 items-center gap-4">
+        <div className="min-h-9 grid grid-cols-4 items-center gap-4">
           <Label htmlFor="content" className="text-right">
             内容
           </Label>
-          <Input
+          <Textarea
             id="content"
             name="content"
             defaultValue={content}

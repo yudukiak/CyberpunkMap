@@ -14,6 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
+import type { RedTeam,RedMap } from "types/edit";
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
@@ -56,6 +57,7 @@ export function DataTable<TData, TValue>({
               <TableRow
                 key={row.id}
                 data-state={row.getIsSelected() && "selected"}
+                className={`${(row.original as RedTeam | RedMap).is_public ? "" : "text-neutral-400"}`}
               >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>
