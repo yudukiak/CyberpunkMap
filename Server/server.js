@@ -64,7 +64,7 @@ db.on("notification", (msg) => {
     wss.clients.forEach((client) => {
       if (client.readyState === client.OPEN) {
         // クライアント側のイベント名
-        client.send("red_map_updated");
+        client.send("redMapUpdated");
       }
     });
   }

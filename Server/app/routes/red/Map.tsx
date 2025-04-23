@@ -35,14 +35,15 @@ export default function Map({ pins }: { pins: PinsObjectType[] }) {
       };
       ws.onmessage = (event) => {
         const { data } = event;
-        if (data === "red_map_updated") {
-          debugLog("🔁 WebSocket updated受信");
+        debugLog("ℹ️ WebSocket メッセージ受信", data);
+        // マップ更新
+        if (data === "redMapUpdated") {
+          debugLog("🔁 redMapUpdated");
           revalidator.revalidate();
-        } else if (data === "keepalive") {
-          debugLog(
-            "📡 WebSocket keepalive受信",
-            new Date().toLocaleString("ja-JP")
-          );
+        }
+        // 死活監視（未使用）
+        else if (data === "keepalive") {
+          debugLog("📡 keepalive", new Date().toLocaleString("ja-JP"));
         }
       };
       ws.onclose = () => {
