@@ -112,7 +112,7 @@ export default function Map({ pins }: { pins: PinsObjectType[] }) {
       scrollWheelZoom={true}
       crs={CRS.Simple}
       className="h-full w-full"
-      style={{background: "#1e1e29"}}
+      style={{ background: "#1e1e29" }}
       id="map"
     >
       <TileLayer
