@@ -70,24 +70,33 @@ db.on("notification", (msg) => {
   }
 });
 
-// WebSocket 接続管理（ping/pong）
-wss.on("connection", (ws) => {
-  ws.isAlive = true;
-  ws.on("pong", () => ws.isAlive = true);
-  ws.on("message", (msg) => console.log("📨 WebSocketメッセージ:", msg.toString()));
-});
-// WebSocketが切断するため30秒ごとにping送信
-setInterval(() => {
-  wss.clients.forEach((ws) => {
-    if (ws.isAlive === false) return ws.terminate();
-    ws.isAlive = false;
-    ws.ping();
-    // 明示的なメッセージ送信
-    if (ws.readyState === ws.OPEN) {
-      ws.send("keepalive");
+// WebSocket クライアントからの受信
+wss.on("connection", ws => {  
+  ws.on("message", msg => {
+    try {
+      const parsed = JSON.parse(msg);
+      if (parsed.type === "moveMapCenter") {
+        const { latlng } = parsed;
+        if (!latlng || typeof latlng.lat !== 'number' || typeof latlng.lng !== 'number') {
+          console.error("❌ 無効な座標データ:", parsed);
+          return;
+        }
+        // 受け取った座標を全クライアントに送信
+        wss.clients.forEach(client => {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify({ 
+              type: "moveMapCenter", 
+              lat: latlng.lat, 
+              lng: latlng.lng 
+            }));
+          }
+        });
+      }
+    } catch (error) {
+      console.error("❌ WebSocketメッセージ処理エラー:", error);
     }
   });
-}, 30 * 1000);
+});
 
 // devモードでは、WebSocketサーバーを単独で起動
 if (isDev) {

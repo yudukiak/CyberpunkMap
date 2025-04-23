@@ -8,20 +8,45 @@ import {
   LayersControl,
   LayerGroup,
 } from "react-leaflet";
-import { useEffect } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useRevalidator } from "react-router";
-import { CRS, Icon } from "leaflet";
+import { CRS, Icon, Map as LeafletMap } from "leaflet";
 import { isDevelopment, debugLog } from "~/utilities/debugLog";
 
 const MODE = import.meta.env.MODE;
 const PORT = import.meta.env.VITE_SERVER_PORT;
 const vsPort = MODE === "development" ? `:${PORT}` : null;
 
+function ClipboardMapClick() {
+  useMapEvents({
+    click(e) {
+      if (!isDevelopment()) return null;
+      const { lat, lng } = e.latlng;
+      const coords = `${lat}, ${lng}`;
+      navigator.clipboard
+        .writeText(coords)
+        .then(() => console.log(`📋 コピーしました: ${coords}`))
+        .catch((err) => console.error("❌ コピーに失敗しました", err));
+    },
+  });
+  return null;
+}
+
 export default function Map({ pins }: { pins: PinsObjectType[] }) {
   if (pins == null) throw { message: "情報の取得に失敗しました" };
 
+  const mapRef = useRef<LeafletMap>(null);
   const revalidator = useRevalidator();
+  const [isMapReady, setIsMapReady] = useState(false);
+
+  const handleMapReady = useCallback(() => {
+    debugLog("✅ MapContainer 初期化完了");
+    setIsMapReady(true);
+  }, []);
+
   useEffect(() => {
+    if (!isMapReady) return;
+
     let retryTimeout: number;
     const connect = () => {
       const wsProtocol = window.location.protocol === "https:" ? "wss" : "ws";
@@ -30,49 +55,43 @@ export default function Map({ pins }: { pins: PinsObjectType[] }) {
       const ws = new WebSocket(
         `${wsProtocol}://${window.location.hostname}${wsPort}/ws`
       );
-      ws.onopen = () => {
-        debugLog("✅ WebSocket 接続成功");
-      };
-      ws.onmessage = (event) => {
-        const { data } = event;
-        debugLog("ℹ️ WebSocket メッセージ受信", data);
-        // マップ更新
-        if (data === "redMapUpdated") {
-          debugLog("🔁 redMapUpdated");
-          revalidator.revalidate();
-        }
-        // 死活監視（未使用）
-        else if (data === "keepalive") {
-          debugLog("📡 keepalive", new Date().toLocaleString("ja-JP"));
-        }
-      };
+
+      ws.onopen = () => debugLog("✅ WebSocket 接続成功");
       ws.onclose = () => {
         debugLog("⏸️ WebSocket 切断 → 再接続します");
         retryTimeout = window.setTimeout(connect, 3000);
       };
       ws.onerror = (err) => {
         debugLog("❌ WebSocket エラー:", err);
-        ws.close(); // 自動で再接続される
+        ws.close();
+      };
+      ws.onmessage = (event) => {
+        try {
+          const { data } = event;
+          debugLog("ℹ️ WebSocket メッセージ受信", data);
+          
+          if (data === "redMapUpdated") {
+            debugLog("🔁 redMapUpdated");
+            revalidator.revalidate();
+          } else if (typeof data === 'string' && data.startsWith('{')) {
+            const parsed = JSON.parse(data);
+            if (parsed.type === "moveMapCenter") {
+              const { lat, lng } = parsed;
+              debugLog("🔁 moveMapCenter", { lat, lng });
+              mapRef.current?.setView([lat, lng], mapRef.current.getZoom());
+            }
+          } else if (data === "keepalive") {
+            debugLog("📡 keepalive", new Date().toLocaleString("ja-JP"));
+          }
+        } catch (error) {
+          debugLog("❌ WebSocketメッセージ処理エラー:", error);
+        }
       };
     };
+
     connect();
     return () => clearTimeout(retryTimeout);
-  }, []);
-
-  function ClipboardMapClick() {
-    useMapEvents({
-      click(e) {
-        if (!isDevelopment()) return null;
-        const { lat, lng } = e.latlng;
-        const coords = `${lat}, ${lng}`;
-        navigator.clipboard
-          .writeText(coords)
-          .then(() => console.log(`📋 コピーしました: ${coords}`))
-          .catch((err) => console.error("❌ コピーに失敗しました", err));
-      },
-    });
-    return null;
-  }
+  }, [isMapReady, revalidator]);
 
   const LayersControlList = pins.map(({ name, pins }, index) => {
     const pinsList = pins.map(
@@ -104,8 +123,10 @@ export default function Map({ pins }: { pins: PinsObjectType[] }) {
       </LayersControl.Overlay>
     );
   });
+
   return (
     <MapContainer
+      ref={mapRef}
       center={[-128, 128]}
       zoom={3}
       minZoom={0}
@@ -115,6 +136,7 @@ export default function Map({ pins }: { pins: PinsObjectType[] }) {
       className="h-full w-full"
       style={{ background: "#1e1e29" }}
       id="map"
+      whenReady={handleMapReady}
     >
       <TileLayer
         url="/map/CyberpunkRed/tiles/{z}/{x}/{y}.png"
