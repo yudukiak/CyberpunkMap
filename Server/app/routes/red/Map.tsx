@@ -20,9 +20,11 @@ const vsPort = MODE === "development" ? `:${PORT}` : null;
 function ClipboardMapClick() {
   useMapEvents({
     click(e) {
+      console.log('⚙️', isDevelopment());
       if (!isDevelopment()) return null;
       const { lat, lng } = e.latlng;
       const coords = `${lat}, ${lng}`;
+      console.log('📍', coords);
       navigator.clipboard
         .writeText(coords)
         .then(() => console.log(`📋 コピーしました: ${coords}`))
