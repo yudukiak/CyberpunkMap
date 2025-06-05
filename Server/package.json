@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "build": "react-router build",
-    "dev": "concurrently \"react-router dev\" \"cross-env MODE=development node server.js\"",
+    "dev": "react-router dev",
+    "dev_": "concurrently \"react-router dev\" \"cross-env MODE=development node server.js\"",
     "start": "node server.js",
     "start_default": "react-router-serve ./build/server/index.js",
     "typecheck": "react-router typegen && tsc"
@@ -20,6 +21,8 @@
     "@react-router/express": "^7.5.0",
     "@react-router/node": "^7.5.0",
     "@react-router/serve": "^7.5.0",
+    "@supabase/ssr": "^0.6.1",
+    "@supabase/supabase-js": "^2.49.10",
     "@tanstack/react-table": "^8.21.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -60,6 +63,7 @@
     "tailwindcss": "^4.1.4",
     "typescript": "^5.7.2",
     "vite": "^5.4.11",
+    "vite-plugin-devtools-json": "^0.1.0",
     "vite-tsconfig-paths": "^5.1.4"
   }
 }
