@@ -1,5 +1,6 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import type { RedMap } from "types/edit";
+import { MODE, DEV_WS_PORT, SERVER_PORT } from "~/config/vite";
 import { useEffect, useRef } from "react";
 import { Link } from "react-router";
 import { Pencil } from "lucide-react";
@@ -52,36 +53,31 @@ export const columns: ColumnDef<RedMap>[] = [
   },
   {
     id: "moveMapCenter",
-    cell: ({ row }) => {
-      const socketRef = useRef<WebSocket | null>(null);
-      /*
-      useEffect(() => {
-        const wsProtocol = window.location.protocol === "https:" ? "wss" : "ws";
-        const wlPort = window.location.port;
-        const wsPort = wlPort === "" ? "" : `:${wlPort}`;
-        socketRef.current = new WebSocket(
-          `${wsProtocol}://${window.location.hostname}${wsPort}/ws`
-        );
-
-        return () => {
-          if (socketRef.current) {
-            socketRef.current.close();
-          }
-        };
-      }, []);
-*/
+    cell: (context) => {
+      const { row } = context as any;
       return (
         <Button
           variant="outline"
           onClick={() => {
-            if (socketRef.current) {
-              socketRef.current.send(
+            console.log("送信開始")
+            const wsProtocol = window.location.protocol === "https:" ? "wss" : "ws";
+            const wsPort = MODE === "development" ? DEV_WS_PORT : SERVER_PORT;
+            const wsUrl = `${wsProtocol}://${window.location.hostname}:${wsPort}/ws`;
+            console.log("wsUrl", wsUrl)
+            const ws = new window.WebSocket(wsUrl);
+            ws.onopen = () => {
+              ws.send(
                 JSON.stringify({
                   type: "moveMapCenter",
                   latlng: { lat: row.original.lat, lng: row.original.lng },
                 })
               );
-            }
+              ws.close();
+              console.log("送信完了")
+            };
+            ws.onerror = () => {
+              alert("WebSocket送信に失敗しました");
+            };
           }}
         >
           移動

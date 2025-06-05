@@ -9,13 +9,9 @@ import {
   LayerGroup,
 } from "react-leaflet";
 import { useEffect, useRef, useState, useCallback } from "react";
-import { useRevalidator } from "react-router";
 import { CRS, Icon, Map as LeafletMap } from "leaflet";
 import { isDevelopment, debugLog } from "~/utilities/debugLog";
-//import { MODE, PORT } from "~/config";
-
-//const vsPort = MODE === "development" ? `:${PORT}` : null;
-
+import { MODE, DEV_WS_PORT, SERVER_PORT } from "~/config/vite";
 
 function ClipboardMapClick() {
   useMapEvents({
@@ -35,17 +31,48 @@ function ClipboardMapClick() {
 }
 
 export default function Map({ pins }: { pins: PinsLeafletObjectType[] }) {
-  console.log('👘 - Map.tsx - pins:', pins)
   if (pins == null) throw { message: "情報の取得に失敗しました" };
 
   const mapRef = useRef<LeafletMap>(null);
-  const revalidator = useRevalidator();
   const [isMapReady, setIsMapReady] = useState(false);
 
   const handleMapReady = useCallback(() => {
     debugLog("✅ MapContainer 初期化完了");
     setIsMapReady(true);
   }, []);
+  
+  const wsRef = useRef<WebSocket | null>(null);
+  useEffect(() => {
+    if (!isMapReady) return;
+    const wsProtocol = window.location.protocol === "https:" ? "wss" : "ws";
+    const wsPort = MODE === "development" ? DEV_WS_PORT : SERVER_PORT;
+    const wsUrl = `${wsProtocol}://${window.location.hostname}:${wsPort}/ws`;
+    wsRef.current = new WebSocket(wsUrl);
+    wsRef.current.onmessage = (event) => {
+      const { data } = event;
+      debugLog("📩 WebSocketメッセージ受信", data);
+      try {
+        if (typeof data === 'string' && data.startsWith('{')) {
+          const parsed = JSON.parse(data);
+          if (parsed.type === "moveMapCenter") {
+            const { lat, lng } = parsed.latlng || {};
+            debugLog("🔁 moveMapCenter", { lat, lng });
+            if (lat != null && lng != null) {
+              mapRef.current?.setView([lat, lng], mapRef.current.getZoom());
+            }
+          }
+        }
+      } catch (error) {
+        console.error("❌ WebSocketメッセージ処理エラー:", error);
+      }
+    };
+    wsRef.current.onerror = (err) => {
+      console.error("❌ WebSocketエラー", err);
+    };
+    return () => {
+      wsRef.current?.close();
+    };
+  }, [isMapReady]);
 
   /*
   useEffect(() => {
