@@ -1,21 +1,27 @@
-export type PinsType = {
+export type PinsRawType = {
   lat: number;
   lng: number;
-  content: string;
-  tags: string[];
+  content: string | null;
+  tag: string | null;
+  is_public?: boolean;
+}
+
+export type PinsRawObjectType = {
+  name: string;
+  pins: PinsRawType[];
+}
+
+export type PinsLeafletType = {
+  lat: number;
+  lng: number;
+  content: string | null;
+  tag: string | null;
   className: string;
   zIndexOffset: number;
 };
 
-export type PinsObjectType = {
+export type PinsLeafletObjectType = {
   name: string;
-  pins: PinsType[];
+  pins: PinsLeafletType[];
 };
 
-export type loaderData = {
-  loaderData: {
-    pins: PinsObjectType[];
-    title: string | null;
-    error: string | null;
-  };
-};

@@ -1,9 +1,7 @@
 export type RedTeam = {
-  id: number;
+  id: string;
   name: string;
-  member_ids: number[];
   is_public: boolean;
-  key: string;
 };
 
 export type RedMap = {
@@ -13,10 +11,8 @@ export type RedMap = {
   content: string;
   created_at: string;
   is_public: boolean;
-  team_ids: number[];
-  member_ids: number[];
-  rulebook_ids: number[];
-  tags: string[];
+  team_id: string;
+  tag: string;
 };
 
 export type LoaderData = {

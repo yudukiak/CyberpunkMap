@@ -1,4 +1,4 @@
-import type { PinsObjectType } from "types/map";
+import type { PinsLeafletObjectType } from "types/map";
 import {
   MapContainer,
   TileLayer,
@@ -12,10 +12,10 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useRevalidator } from "react-router";
 import { CRS, Icon, Map as LeafletMap } from "leaflet";
 import { isDevelopment, debugLog } from "~/utilities/debugLog";
+//import { MODE, PORT } from "~/config";
 
-const MODE = import.meta.env.MODE;
-const PORT = import.meta.env.VITE_SERVER_PORT;
-const vsPort = MODE === "development" ? `:${PORT}` : null;
+//const vsPort = MODE === "development" ? `:${PORT}` : null;
+
 
 function ClipboardMapClick() {
   useMapEvents({
@@ -34,7 +34,8 @@ function ClipboardMapClick() {
   return null;
 }
 
-export default function Map({ pins }: { pins: PinsObjectType[] }) {
+export default function Map({ pins }: { pins: PinsLeafletObjectType[] }) {
+  console.log('👘 - Map.tsx - pins:', pins)
   if (pins == null) throw { message: "情報の取得に失敗しました" };
 
   const mapRef = useRef<LeafletMap>(null);
@@ -46,6 +47,7 @@ export default function Map({ pins }: { pins: PinsObjectType[] }) {
     setIsMapReady(true);
   }, []);
 
+  /*
   useEffect(() => {
     if (!isMapReady) return;
 
@@ -94,6 +96,7 @@ export default function Map({ pins }: { pins: PinsObjectType[] }) {
     connect();
     return () => clearTimeout(retryTimeout);
   }, [isMapReady, revalidator]);
+  */
 
   const LayersControlList = pins.map(({ name, pins }, index) => {
     const pinsList = pins.map(

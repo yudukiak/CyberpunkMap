@@ -1,34 +1,32 @@
-import type { Route } from "./+types/_layout";
-import { Outlet, useLocation } from "react-router";
-import { Link, redirect } from "react-router";
+import type { Route } from "./+types/layout";
+import { Outlet, useLocation, Link, redirect } from "react-router";
+import { createClient } from "~/lib/supabase";
 import {
   NavigationMenu,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-} from "@/components/ui/navigation-menu";
-import { ipMatches } from "~/utilities/ipFilter";
+} from "~/components/ui/navigation-menu";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
-  const ip = context?.reqIp as string;
-  const isAdmin = ipMatches(ip);
-  console.log("👘 - _layout.tsx - loader - context:", context);
-  console.log("👘 - _layout.tsx - loader - isAdmin:", isAdmin);
-  if (!isAdmin) return redirect("/");
+  const { supabase } = createClient(request);
+  const { data, error } = await supabase.auth.getUser();
+  const isLoggedIn = data.user !== null;
+  if (!isLoggedIn) return redirect("/");
 }
 
 const components: { title: string; href: string }[] = [
   {
     title: "Index",
-    href: "/red/edit",
+    href: "/edit",
   },
   {
     title: "Team Edit",
-    href: "/red/edit/team",
+    href: "/edit/team",
   },
   {
     title: "Map Edit",
-    href: "/red/edit/map",
+    href: "/edit/map",
   },
 ];
 

@@ -4,13 +4,13 @@ import { Pencil } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { Link } from "react-router";
 
-export const teamColumns: ColumnDef<RedTeam>[] = [
+export const columns: ColumnDef<RedTeam>[] = [
   {
     accessorKey: "is_public",
     header: "公開",
   },
   {
-    accessorKey: "key",
+    accessorKey: "id",
     header: "チームID",
   },
   {
@@ -21,7 +21,7 @@ export const teamColumns: ColumnDef<RedTeam>[] = [
     id: "actions",
     cell: ({ row }) => (
       <Link
-        to={`/red/edit/team/${row.original.id}`}
+        to={`/edit/team/${row.original.id}`}
         className={buttonVariants({ variant: "outline" })}
         preventScrollReset={true}
       >

@@ -1,8 +1,8 @@
 import type { Route } from "./+types/index";
-import type { loaderData } from "types/map";
-import { connectDb, fetchRulebookPins } from "~/utilities/pinLoader";
-import Error from "~/views/Error";
-import Common from "./Common";
+import { decoratePins } from "~/lib/decorate-pins";
+import { createClient } from "~/lib/supabase";
+import Error from "~/components/error";
+import Map from "~/components/map";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -10,31 +10,23 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-export async function loader() {
-  // DB接続
-  const db = await connectDb();
-  // 返却データ
-  let pins = [];
-  try {
-    // rulebookのmap情報を取得
-    const rulebookMap = await fetchRulebookPins(db);
-    pins.push({ name: "ルールブック", pins: rulebookMap });
-    // データ返却
-    return { pins, title: null, error: null };
-  } catch (error) {
-    console.error("🔥", error);
-    return { pins: null, title: null, error: "データベース接続に失敗しました" };
-  } finally {
-    await db.end().catch((e) => console.error("⚠️", e));
-  }
+export async function loader({ params, request }: Route.LoaderArgs) {
+  const teamId = "rulebook";
+  const { supabase } = createClient(request, "public");
+  const { data, error } = await supabase.rpc("get_team_pins", {
+    team_ids: [teamId],
+  });
+  if (error) return { data: null, error: "データベース接続に失敗しました" };
+  const decoratedPins = decoratePins(data);
+  return { data: decoratedPins, error: null };
 }
 
-export default function Index({ loaderData }: loaderData) {
-  const { pins, error } = loaderData;
-  if (error) return <ErrorBoundary />;
+export default function Index({ loaderData }: Route.ComponentProps) {
+  const { data, error } = loaderData;
+  if (error || data == null) return <ErrorBoundary />;
   return (
     <main className="h-dvh w-dvw">
-      <Common pins={pins} />
+      <Map pins={data} />
     </main>
   );
 }
