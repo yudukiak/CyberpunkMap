@@ -10,14 +10,12 @@ import {
 } from "react-leaflet";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { CRS, Icon, Map as LeafletMap } from "leaflet";
-import { isDevelopment, debugLog } from "~/utilities/debugLog";
+import { debugLog } from "~/utilities/debugLog";
 import { MODE, DEV_WS_PORT, SERVER_PORT } from "~/config/vite";
 
 function ClipboardMapClick() {
   useMapEvents({
     click(e) {
-      console.log('⚙️', isDevelopment());
-      if (!isDevelopment()) return null;
       const { lat, lng } = e.latlng;
       const coords = `${lat}, ${lng}`;
       console.log('📍', coords);
@@ -30,7 +28,12 @@ function ClipboardMapClick() {
   return null;
 }
 
-export default function Map({ pins }: { pins: PinsLeafletObjectType[] }) {
+type MapProps = {
+  pins: PinsLeafletObjectType[],
+  dev: boolean,
+}
+
+export default function Map({ pins, dev }: MapProps) {
   if (pins == null) throw { message: "情報の取得に失敗しました" };
 
   const mapRef = useRef<LeafletMap>(null);
@@ -180,7 +183,7 @@ export default function Map({ pins }: { pins: PinsLeafletObjectType[] }) {
         ]}
         attribution='<a href="https://rtalsoriangames.com/2025/01/15/cyberpunk-red-alert-january-2025-dlc-night-city-atlas/" target="_blank">R. Talsorian Games</a>'
       />
-      <ClipboardMapClick />
+      {dev && <ClipboardMapClick />}
       <LayersControl>{LayersControlList}</LayersControl>
     </MapContainer>
   );
