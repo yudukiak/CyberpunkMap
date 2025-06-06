@@ -1,5 +1,6 @@
 import type { Route } from "./+types/map-edit";
 import type { RedTeam, RedMap, RedTag } from "types/edit";
+import { MODE, DEV_WS_PORT, SERVER_PORT } from "~/config/vite";
 import { useEffect } from "react";
 import { useFetcher, useNavigate, redirect } from "react-router";
 import { createClient } from "~/lib/supabase";
@@ -26,20 +27,38 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea"
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner"
+import * as v from "valibot";
+
+const formSchema = v.object({
+  id: v.number(),
+  lat: v.number(),
+  lng: v.number(),
+  content: v.string(),
+  is_public: v.boolean(),
+  team_id: v.string(),
+  tag_id: v.string(),
+});
 
 export async function action({ request }: Route.ActionArgs) {
   const { supabase } = createClient(request, "public");
   const formData = await request.formData();
-  const mapId = formData.get("id");
-  const lat = formData.get("lat");
-  const lng = formData.get("lng");
-  const content = formData.get("content");
-  const is_public = formData.get("is_public") === "on";
-  const team_id = formData.get("team_id");
-  const tag_id = formData.get("tag_id");
-  const { data, error } = await supabase.from("red_map").update({ lat, lng, content, is_public, team_id, tag_id }).eq("id", mapId);
+  const formFields = {
+    id: Number(formData.get("id") ?? 0),
+    lat: Number(formData.get("lat") ?? 0),
+    lng: Number(formData.get("lng") ?? 0),
+    content: String(formData.get("content") ?? ""),
+    is_public: formData.get("is_public") === "on",
+    team_id: String(formData.get("team_id") ?? ""),
+    tag_id: String(formData.get("tag_id") ?? ""),
+  };
+  const result = v.safeParse(formSchema, formFields);
+  if (!result.success) {
+    return { error: "フォームのデータが不正です" };
+  }
+  const { output } = result;
+  const { error } = await supabase.from("red_map").update(output).eq("id", output.id);
   if (error) return { error: error.message };
-  return { success: true };
+  return { success: true, updateData:{...output, id: output.id} };
 }
 
 export async function loader({ params, request }: Route.LoaderArgs) {
@@ -57,8 +76,6 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   // マップが存在しない
   if (map == null || map.length === 0) return redirect("../");
   return { teams, tags, map };
-  //const { data, error } = await supabase.from("red_map").select("*").eq("id", mapId);
-  //return { data, error };
 }
 
 export default function MapEdit({ loaderData }: Route.ComponentProps) {
@@ -140,8 +157,10 @@ function MapForm({ teams, tags, map }: MapFormProps) {
           <Input
             id="lat"
             name="lat"
+            type="number"
             defaultValue={lat}
             className="col-span-3"
+            required
           />
         </div>
 
@@ -152,8 +171,10 @@ function MapForm({ teams, tags, map }: MapFormProps) {
           <Input
             id="lng"
             name="lng"
+            type="number"
             defaultValue={lng}
             className="col-span-3"
+            required
           />
         </div>
 
@@ -166,6 +187,7 @@ function MapForm({ teams, tags, map }: MapFormProps) {
             name="content"
             defaultValue={content}
             className="col-span-3"
+            required
           />
         </div>
 
@@ -176,6 +198,7 @@ function MapForm({ teams, tags, map }: MapFormProps) {
           <Select
             name="team_id"
             defaultValue={team_id}
+            required
           >
             <SelectTrigger className="w-full col-span-3">
               <SelectValue placeholder="チームを選択" />
@@ -197,6 +220,7 @@ function MapForm({ teams, tags, map }: MapFormProps) {
           <Select
             name="tag_id"
             defaultValue={tag_id}
+            required
           >
             <SelectTrigger className="w-full col-span-3">
               <SelectValue placeholder="タグを選択" />
