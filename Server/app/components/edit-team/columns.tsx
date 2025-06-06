@@ -6,18 +6,6 @@ import { Link } from "react-router";
 
 export const columns: ColumnDef<RedTeam>[] = [
   {
-    accessorKey: "is_public",
-    header: "公開",
-  },
-  {
-    accessorKey: "id",
-    header: "チームID",
-  },
-  {
-    accessorKey: "name",
-    header: "チーム名",
-  },
-  {
     id: "actions",
     cell: ({ row }) => (
       <Link
@@ -28,5 +16,13 @@ export const columns: ColumnDef<RedTeam>[] = [
         <Pencil className="h-4 w-4" />
       </Link>
     ),
+  },
+  {
+    accessorKey: "id",
+    header: "チームID",
+  },
+  {
+    accessorKey: "name",
+    header: "チーム名",
   },
 ];

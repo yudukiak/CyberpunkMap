@@ -13,45 +13,6 @@ import {
 
 export const columns: ColumnDef<RedMap>[] = [
   {
-    accessorKey: "is_public",
-    header: "公開",
-  },
-  {
-    accessorKey: "lat",
-    header: "緯度",
-  },
-  {
-    accessorKey: "lng",
-    header: "経度",
-  },
-  {
-    accessorKey: "content",
-    header: "内容",
-    cell: ({ row }) => {
-      const content = row.original.content;
-      const contentArray = content.split("\n");
-      const contentHeader = contentArray[0];
-      return (
-        <Tooltip>
-          <TooltipTrigger className="w-full text-left">
-            <div className="truncate max-w-48">{contentHeader}</div>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p className="whitespace-pre-wrap">{content}</p>
-          </TooltipContent>
-        </Tooltip>
-      );
-    },
-  },
-  {
-    accessorKey: "team_id",
-    header: "チームID",
-  },
-  {
-    accessorKey: "tag",
-    header: "タグ",
-  },
-  {
     id: "moveMapCenter",
     cell: (context) => {
       const { row } = context as any;
@@ -96,5 +57,40 @@ export const columns: ColumnDef<RedMap>[] = [
         <Pencil className="h-4 w-4" />
       </Link>
     ),
+  },
+  {
+    accessorKey: "content",
+    header: "内容",
+    cell: ({ row }) => {
+      const content = row.original.content;
+      const contentArray = content.split("\n");
+      const contentHeader = contentArray[0];
+      return (
+        <Tooltip>
+          <TooltipTrigger className="w-full text-left">
+            <div className="truncate max-w-48">{contentHeader}</div>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p className="whitespace-pre-wrap">{content}</p>
+          </TooltipContent>
+        </Tooltip>
+      );
+    },
+  },
+  {
+    accessorKey: "team_id",
+    header: "チームID",
+  },
+  {
+    accessorKey: "tag",
+    header: "タグ",
+  },
+  {
+    accessorKey: "lat",
+    header: "緯度",
+  },
+  {
+    accessorKey: "lng",
+    header: "経度",
   },
 ];

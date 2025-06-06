@@ -34,7 +34,7 @@ export default function EditLayout() {
   const location = useLocation();
   return (
     <>
-      <header className="h-12 px-4 flex items-center border-b border-neutral-800">
+      <header className="h-12 px-4 flex items-center shrink-0 sticky top-0 z-10 bg-background border-b border-neutral-800">
         <NavigationMenu>
           <NavigationMenuList>
             {components.map((component) => {
@@ -71,7 +71,7 @@ export default function EditLayout() {
           </NavigationMenuList>
         </NavigationMenu>
       </header>
-      <main className="h-[calc(100dvh-calc(var(--spacing)*12))]">
+      <main className="min-h-0 flex-1">
         <Outlet />
       </main>
     </>

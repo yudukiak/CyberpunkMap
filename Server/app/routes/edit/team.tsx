@@ -2,7 +2,7 @@ import type { Route } from "./+types/team";
 import { Outlet } from "react-router";
 import { createClient } from "~/lib/supabase";
 import Error from "~/components/error";
-import DataTable from "~/components/data-table";
+import DataTable from "~/components/edit/data-table";
 import { columns } from "~/components/edit-team/columns";
 
 export async function loader({ request }: Route.LoaderArgs) {
@@ -15,10 +15,12 @@ export default function MapPage({ loaderData }: Route.ComponentProps) {
   const { data, error } = loaderData;
   if (error || data == null) return <ErrorBoundary />;
   return (
-    <div className="p-4">
-      <DataTable columns={columns} data={data} />
+    <>
+      <div className="h-full p-4">
+        <DataTable columns={columns} data={data} />
+      </div>
       <Outlet />
-    </div>
+    </>
   );
 }
 

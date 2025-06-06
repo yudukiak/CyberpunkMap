@@ -5,6 +5,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table"
 
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import {
   Table,
   TableBody,
@@ -31,9 +32,9 @@ export default function DataTable<TData, TValue>({
   })
 
   return (
-    <div>
-      <Table>
-        <TableHeader>
+    <ScrollArea className="h-full">
+      <table className="w-full caption-bottom text-sm">
+        <TableHeader className="sticky top-0 bg-background z-1">
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => {
@@ -74,7 +75,8 @@ export default function DataTable<TData, TValue>({
             </TableRow>
           )}
         </TableBody>
-      </Table>
-    </div>
+      </table>
+      <ScrollBar orientation="horizontal" />
+    </ScrollArea>
   )
 }
