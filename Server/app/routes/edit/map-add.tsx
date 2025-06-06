@@ -26,19 +26,35 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea"
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner"
+import * as v from "valibot";
+
+const formSchema = v.object({
+  lat: v.number(),
+  lng: v.number(),
+  content: v.string(),
+  is_public: v.boolean(),
+  team_id: v.string(),
+  tag_id: v.string(),
+});
 
 export async function action({ request }: Route.ActionArgs) {
   const { supabase } = createClient(request, "public");
   const formData = await request.formData();
-  //const mapId = formData.get("id");
-  const lat = formData.get("lat");
-  const lng = formData.get("lng");
-  const content = formData.get("content");
-  const is_public = formData.get("is_public") === "on";
-  const team_id = formData.get("team_id");
-  const tag_id = formData.get("tag_id");
-  const { data, error } = await supabase.from("red_map").insert([{ lat, lng, content, is_public, team_id, tag_id }]);
-   if (error) return { error: error.message };
+  const formFields = {
+    lat: Number(formData.get("lat") ?? 0),
+    lng: Number(formData.get("lng") ?? 0),
+    content: String(formData.get("content") ?? ""),
+    is_public: formData.get("is_public") === "on",
+    team_id: String(formData.get("team_id") ?? ""),
+    tag_id: String(formData.get("tag_id") ?? ""),
+  };
+  const result = v.safeParse(formSchema, formFields);
+  if (!result.success) {
+    return { error: "フォームのデータが不正です" };
+  }
+  const { output } = result;
+  const { error } = await supabase.from("red_map").insert([output]);
+  if (error) return { error: error.message };
   return { success: true };
 }
 
