@@ -10,7 +10,6 @@ import {
 } from "react-leaflet";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { CRS, Icon, Map as LeafletMap } from "leaflet";
-import { debugLog } from "~/utilities/debugLog";
 import { MODE, DEV_WS_PORT, SERVER_PORT } from "~/config/vite";
 
 function ClipboardMapClick() {
@@ -34,6 +33,11 @@ type MapProps = {
 }
 
 export default function Map({ pins, dev }: MapProps) {
+  // コンソールログを出力する関数
+  function debugLog(...args: any[]) {
+    if (dev) console.log(...args);
+  }
+
   if (pins == null) throw { message: "情報の取得に失敗しました" };
 
   const mapRef = useRef<LeafletMap>(null);

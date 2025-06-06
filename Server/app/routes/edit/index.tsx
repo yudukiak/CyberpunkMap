@@ -15,7 +15,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 export default function Index({ loaderData }: Route.ComponentProps) {
   const { data, error } = loaderData;
   if (error || data == null) return <ErrorBoundary />;
-  return <Map pins={data} />;
+  return <Map pins={data} dev={true} />;
 }
 
 export function ErrorBoundary() {
