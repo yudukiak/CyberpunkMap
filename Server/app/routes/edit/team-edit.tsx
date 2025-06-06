@@ -143,5 +143,6 @@ function TeamForm({ team }: TeamFormProps) {
 }
 
 export function ErrorBoundary() {
+  console.log("routes/edit/team-edit.tsx");
   return <Error />;
 }

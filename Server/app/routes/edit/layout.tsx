@@ -7,6 +7,7 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
 } from "~/components/ui/navigation-menu";
+import Error from "~/components/error";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
   const { supabase } = createClient(request);
@@ -80,4 +81,9 @@ export default function EditLayout() {
       </main>
     </>
   );
+}
+
+export function ErrorBoundary() {
+  console.log("routes/edit/layout.tsx");
+  return <Error />;
 }

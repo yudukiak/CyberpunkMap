@@ -33,5 +33,6 @@ export default function TeamPage({ loaderData }: Route.ComponentProps) {
 }
 
 export function ErrorBoundary() {
+  console.log("routes/edit/team.tsx");
   return <Error />;
 }

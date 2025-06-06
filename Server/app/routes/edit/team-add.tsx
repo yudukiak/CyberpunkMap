@@ -132,5 +132,6 @@ function MapForm() {
 }
 
 export function ErrorBoundary() {
+  console.log("routes/edit/team-add.tsx");
   return <Error />;
 }

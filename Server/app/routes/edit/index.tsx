@@ -19,5 +19,6 @@ export default function Index({ loaderData }: Route.ComponentProps) {
 }
 
 export function ErrorBoundary() {
+  console.log("routes/edit/index.tsx");
   return <Error />;
 }

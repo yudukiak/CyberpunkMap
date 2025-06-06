@@ -217,5 +217,6 @@ function MapForm({ teams, tags, map }: MapFormProps) {
 }
 
 export function ErrorBoundary() {
+  console.log("routes/edit/map-edit.tsx");
   return <Error />;
 }

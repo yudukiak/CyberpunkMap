@@ -33,5 +33,6 @@ export default function TagPage({ loaderData }: Route.ComponentProps) {
 }
 
 export function ErrorBoundary() {
+  console.log("routes/edit/tag.tsx");
   return <Error />;
 }

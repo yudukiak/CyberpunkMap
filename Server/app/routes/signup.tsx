@@ -11,6 +11,7 @@ import {
   FormLabel,
   FormMessage,
 } from "~/components/auth/auth-form";
+import Error from "~/components/error";
 import * as v from "valibot";
 
 import { Button } from "~/components/ui/button";
@@ -92,4 +93,8 @@ export default function SignupPage({ actionData }: Route.ComponentProps) {
       </CardContent>
     </Card>
   );
+}
+
+export function ErrorBoundary() {
+  return <Error />;
 }

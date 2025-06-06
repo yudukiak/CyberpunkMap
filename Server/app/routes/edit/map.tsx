@@ -33,5 +33,6 @@ export default function MapPage({ loaderData }: Route.ComponentProps) {
 }
 
 export function ErrorBoundary() {
+  console.log("routes/edit/map.tsx");
   return <Error />;
 }

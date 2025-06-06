@@ -27,5 +27,6 @@ export default [
       ]),
     ]),
   ]),
-
+  // 404 Not Found
+  route("*", "routes/404.tsx"),
 ] satisfies RouteConfig;
