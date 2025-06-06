@@ -28,6 +28,10 @@ const components: { title: string; href: string }[] = [
     title: "Map Edit",
     href: "/edit/map",
   },
+  {
+    title: "Tag Edit",
+    href: "/edit/tag",
+  },
 ];
 
 export default function EditLayout() {

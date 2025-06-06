@@ -21,6 +21,10 @@ export default [
         route(":mapId", "routes/edit/map-edit.tsx"),
         route("add", "routes/edit/map-add.tsx"),
       ]),
+      route("tag", "routes/edit/tag.tsx", [
+        //route(":tagId", "routes/edit/tag-edit.tsx"),
+        //route("add", "routes/edit/tag-add.tsx"),
+      ]),
     ]),
   ]),
 

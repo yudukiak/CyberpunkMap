@@ -85,14 +85,17 @@ export type Database = {
       red_tag: {
         Row: {
           id: string
+          is_public: boolean
           name: string
         }
         Insert: {
           id?: string
+          is_public?: boolean
           name?: string
         }
         Update: {
           id?: string
+          is_public?: boolean
           name?: string
         }
         Relationships: []

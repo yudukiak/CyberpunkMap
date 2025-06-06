@@ -18,4 +18,5 @@ export type RedMap = {
 export type RedTag = {
   id: string;
   name: string;
+  is_public: boolean;
 };
