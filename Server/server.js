@@ -8,6 +8,8 @@ import 'dotenv/config';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+// 各クライアントの「現在のパス」を記憶する Map
+const clientRoutes = new Map();
 
 if (process.env.NODE_ENV === "development") {
   // WebSocketサーバーのみ起動
@@ -19,12 +21,37 @@ if (process.env.NODE_ENV === "development") {
     ws.on("message", (message) => {
       const messageString = message.toString();
       console.log("📩 WebSocket受信: ", messageString);
-      wss.clients.forEach((client) => {
-        if (client !== ws && client.readyState === ws.OPEN) {
-          console.log("📩 WebSocket送信: ", messageString);
-          client.send(messageString);
+      try {
+        const json = JSON.parse(messageString);
+        // 👣 クライアントから初回に「ルート通知」された場合
+        if (json.type === "initRoute" && typeof json.route === "string") {
+          clientRoutes.set(ws, json.route); // ← 例: /red/miscrunners
+          return;
         }
-      });
+        // マップの移動または更新通知が来た場合、team_idを対象に送信
+        if (json.type === "moveMapCenter" || json.type === "updateMap") {
+          const targetTeamId = json.team_id;
+          const isRulebook = targetTeamId === "rulebook"; // チームIDが「rulebook」
+          wss.clients.forEach((client) => {
+            const route = clientRoutes.get(client) || "";
+            const isEdit = route.startsWith("/edit"); // 編集ページ
+            const isRedSubPage = route.startsWith("/red/") && route !== "/red/"; // サブページ
+            const isRedTeam = route.startsWith(`/red/${targetTeamId}`); // チームページ
+            const isTarget =
+              // ルールブック以外は チームページ もしくは 編集ページ を対象とする
+              (!isRulebook && (isRedTeam || isEdit)) ||
+              // ルールブックは サブページ もしくは 編集ページ を対象とする
+              (isRulebook && (isRedSubPage || isEdit));
+            if (isTarget && client.readyState === WebSocket.OPEN) {
+              console.log("📩 WebSocket送信: ", messageString);
+              client.send(messageString);
+            }
+          });
+          return;
+        }
+      } catch (error) {
+        console.error("❌ JSON parse error: ", error);
+      }
     });
     ws.on("close", () => {
       console.log("❎ WebSocket切断");

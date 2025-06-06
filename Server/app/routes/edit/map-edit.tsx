@@ -3,6 +3,7 @@ import type { RedTeam, RedMap, RedTag } from "types/edit";
 import { MODE, DEV_WS_PORT, SERVER_PORT } from "~/config/vite";
 import { useEffect } from "react";
 import { useFetcher, useNavigate, redirect } from "react-router";
+import { decoratePins } from "~/lib/decorate-pins";
 import { createClient } from "~/lib/supabase";
 import Error from "~/components/error";
 import Loading from "~/components/loading";
@@ -31,6 +32,7 @@ import * as v from "valibot";
 
 const formSchema = v.object({
   id: v.number(),
+  short_id: v.string(),
   lat: v.number(),
   lng: v.number(),
   content: v.string(),
@@ -44,6 +46,7 @@ export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
   const formFields = {
     id: Number(formData.get("id") ?? 0),
+    short_id: String(formData.get("short_id") ?? ""),
     lat: Number(formData.get("lat") ?? 0),
     lng: Number(formData.get("lng") ?? 0),
     content: String(formData.get("content") ?? ""),
@@ -78,6 +81,39 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   return { teams, tags, map };
 }
 
+function updateMap(updateData: RedMap, name: string) {
+  const { team_id } = updateData;
+  const data = [
+    {
+      team_id: team_id,
+      name: name,
+      pins: [updateData],
+    },
+  ];
+  const decoratedPins = decoratePins(data);
+  console.log("送信開始");
+  const wsProtocol =
+    window.location.protocol === "https:" ? "wss" : "ws";
+  const wsPort = MODE === "development" ? DEV_WS_PORT : SERVER_PORT;
+  const wsUrl = `${wsProtocol}://${window.location.hostname}:${wsPort}/ws`;
+  console.log("wsUrl", wsUrl);
+  const ws = new window.WebSocket(wsUrl);
+  ws.onopen = () => {
+    ws.send(
+      JSON.stringify({
+        type: "updateMap",
+        team_id: team_id,
+        data: decoratedPins,
+      })
+    );
+    ws.close();
+    console.log("送信完了");
+  };
+  ws.onerror = () => {
+    alert("WebSocket送信に失敗しました");
+  };
+}
+
 export default function MapEdit({ loaderData }: Route.ComponentProps) {
   const { teams, tags, map, error } = loaderData;
   if (error || teams == null || tags == null || map == null) return <ErrorBoundary />;
@@ -89,6 +125,10 @@ export default function MapEdit({ loaderData }: Route.ComponentProps) {
       toast.error(fetcher.data.error);
     } else if (fetcher.data?.success) {
       navigate("/edit/map/", { preventScrollReset: true });
+      // マップの更新
+      const updateData = fetcher.data.updateData;
+      const teamName = teams.find((team) => team.id === updateData.team_id)?.name ?? "";
+      updateMap(updateData, teamName);
     }
   }, [fetcher.data, navigate]);
 
@@ -130,13 +170,12 @@ type MapFormProps = {
 }
 
 function MapForm({ teams, tags, map }: MapFormProps) {
-  console.log('👘 - map-edit.tsx - MapForm - tags:', tags)
-  const { id, lat, lng, content, is_public, team_id, tag_id } = map;
-  console.log('👘 - map-edit.tsx - MapForm - tag_id:', tag_id)
+  const { id, short_id, lat, lng, content, is_public, team_id, tag_id } = map;
   return (
     <>
       <div className="grid gap-4 py-4">
         <Input id="id" name="id" defaultValue={id} type="hidden" />
+        <Input id="short_id" name="short_id" defaultValue={short_id} type="hidden" />
 
         <div className="h-9 grid grid-cols-4 items-center gap-4">
           <Label htmlFor="name" className="text-right">

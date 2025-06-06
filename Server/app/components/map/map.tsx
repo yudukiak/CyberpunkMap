@@ -56,6 +56,28 @@ export default function Map({ pins: pinsRaw, dev }: MapProps) {
     const wsPort = MODE === "development" ? DEV_WS_PORT : SERVER_PORT;
     const wsUrl = `${wsProtocol}://${window.location.hostname}:${wsPort}/ws`;
     wsRef.current = new WebSocket(wsUrl);
+
+    // リトライ用
+    let retryCount = 0;
+    const maxRetries = 5;
+    const sendInitRoute = () => {
+      if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
+      try {
+        wsRef.current.send(JSON.stringify({ type: "initRoute", route: window.location.pathname }));
+        debugLog("✅ initRoute送信成功");
+      } catch (e) {
+        if (retryCount < maxRetries) {
+          retryCount++;
+          debugLog(`❌ initRoute送信失敗、リトライ(${retryCount})`);
+          setTimeout(sendInitRoute, 500 * retryCount); // だんだん遅らせてリトライ
+        } else {
+          debugLog("❌ initRoute送信リトライ上限到達");
+        }
+      }
+    };
+    wsRef.current.onopen = () => {
+      sendInitRoute();
+    };
     wsRef.current.onmessage = (event) => {
       const { data } = event;
       debugLog("📩 WebSocketメッセージ受信", data);
@@ -63,16 +85,16 @@ export default function Map({ pins: pinsRaw, dev }: MapProps) {
         if (typeof data === 'string' && data.startsWith('{')) {
           const parsed = JSON.parse(data);
           if (parsed.type === "moveMapCenter") {
-            const { lat, lng } = parsed.latlng || {};
+            const { lat, lng } = parsed.data || {};
             debugLog("🔁 moveMapCenter", { lat, lng });
             if (lat != null && lng != null) {
               mapRef.current?.setView([lat, lng], mapRef.current.getZoom());
             }
           }
           if (parsed.type === "updatePins") {
-            const { pins } = parsed;
+            const { pins }: { pins: PinsLeafletObjectType[] } = parsed;
             debugLog("🔁 updatePins", pins);
-            setPins(pins);
+            //setPins(pins);
           }
         }
       } catch (error) {
