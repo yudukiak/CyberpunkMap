@@ -15,6 +15,7 @@ export default [
       index("routes/edit/index.tsx"),
       route("team", "routes/edit/team.tsx", [
         route(":teamId", "routes/edit/team-edit.tsx"),
+        route("add", "routes/edit/team-add.tsx"),
       ]),
       route("map", "routes/edit/map.tsx", [
         route(":mapId", "routes/edit/map-edit.tsx"),

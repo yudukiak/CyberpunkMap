@@ -37,7 +37,7 @@ type ColorLibrary = {
 };
 
 export function getColor({ team_id, tag_id }: ColorLibrary) {
-  const team = team_id ? teamColor[team_id] : undefinedColor;
-  const tag = tag_id ? tagColor[tag_id] : undefinedColor;
+  const team = team_id ? (teamColor[team_id] ?? undefinedColor) : undefinedColor;
+  const tag = tag_id ? (tagColor[tag_id] ?? undefinedColor) : undefinedColor;
   return { team, tag };
 }

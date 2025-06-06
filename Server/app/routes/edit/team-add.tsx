@@ -1,7 +1,7 @@
-import type { Route } from "./+types/team-edit";
+import type { Route } from "./+types/team-add";
 import type { RedTeam } from "types/edit";
 import { useEffect } from "react";
-import { useFetcher, useNavigate, redirect } from "react-router";
+import { useFetcher, useNavigate } from "react-router";
 import { createClient } from "~/lib/supabase";
 import Error from "~/components/error";
 import Loading from "~/components/loading";
@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea"
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner"
 
@@ -32,28 +33,21 @@ export async function action({ request }: Route.ActionArgs) {
   const id = formData.get("id");
   const name = formData.get("name");
   const is_public = formData.get("is_public") === "on";
-  const { data, error } = await supabase.from("red_team").update({ name, is_public }).eq("id", id);
-  if (error) return { error: error.message };
+  const { data, error } = await supabase.from("red_team").insert([{ id, name, is_public }]);
+   if (error) return { error: error.message };
   return { success: true };
 }
 
-export async function loader({ params, request }: Route.LoaderArgs) {
-  const { teamId } = params;
-  const { supabase } = createClient(request, "public");
-  const { data, error } = await supabase.from("red_team").select("*").eq("id", teamId);
-  if (data == null || data.length === 0) return redirect("../");
-  return { team: data, error };
+export async function loader({ request }: Route.LoaderArgs) {
 }
 
-export default function TeamEdit({ loaderData }: Route.ComponentProps) {
-  console.log('👘 - team-edit.tsx - TeamEdit - loaderData:', loaderData)
-  const { team, error } = loaderData;
-  if (error || team == null) return <ErrorBoundary />;
+export default function TeamAdd({ loaderData }: Route.ComponentProps) {
   let fetcher = useFetcher();
   const navigate = useNavigate();
   const isLoading = fetcher.state !== "idle";
   useEffect(() => {
     if (fetcher.data?.error) {
+      console.error('error:', fetcher.data?.error)
       toast.error(fetcher.data.error);
     } else if (fetcher.data?.success) {
       navigate("/edit/team/", { preventScrollReset: true });
@@ -71,13 +65,13 @@ export default function TeamEdit({ loaderData }: Route.ComponentProps) {
     >
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>編集</DialogTitle>
-          <DialogDescription>チームの編集を行います。</DialogDescription>
+          <DialogTitle>追加</DialogTitle>
+          <DialogDescription>チームの追加を行います。</DialogDescription>
         </DialogHeader>
         <fetcher.Form method="post">
-          <TeamForm team={team[0]} />
+          <MapForm />
           <Button type="submit" className="block m-auto">
-            保存
+            追加
           </Button>
           {isLoading && (
             <div className="absolute top-0 left-0 w-full h-full bg-neutral-950/70 z-10">
@@ -91,12 +85,7 @@ export default function TeamEdit({ loaderData }: Route.ComponentProps) {
   );
 }
 
-type TeamFormProps = {
-  team: RedTeam;
-}
-
-function TeamForm({ team }: TeamFormProps) {
-  const { id, name, is_public } = team;
+function MapForm() {
   return (
     <>
       <div className="grid gap-4 py-4">
@@ -108,7 +97,7 @@ function TeamForm({ team }: TeamFormProps) {
           <Switch
             id="is_public"
             name="is_public"
-            defaultChecked={is_public}
+            defaultChecked={false}
             className="col-span-3"
           />
         </div>
@@ -120,7 +109,7 @@ function TeamForm({ team }: TeamFormProps) {
           <Input
             id="id"
             name="id"
-            defaultValue={id}
+            defaultValue=""
             className="col-span-3"
           />
         </div>
@@ -132,7 +121,7 @@ function TeamForm({ team }: TeamFormProps) {
           <Input
             id="name"
             name="name"
-            defaultValue={name}
+            defaultValue=""
             className="col-span-3"
           />
         </div>
