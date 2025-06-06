@@ -13,7 +13,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-function MoveMapCenter(lat: number, lng: number) {
+function moveMapCenter(lat: number, lng: number) {
   console.log("送信開始");
   const wsProtocol =
     window.location.protocol === "https:" ? "wss" : "ws";
@@ -51,7 +51,7 @@ export const columns: ColumnDef<RedMap>[] = [
           <Button
             variant="outline"
             className="cursor-pointer"
-            onClick={() => MoveMapCenter(row.original.lat, row.original.lng)}
+            onClick={() => moveMapCenter(row.original.lat, row.original.lng)}
           >
             <MapPinned />
           </Button>
@@ -60,7 +60,7 @@ export const columns: ColumnDef<RedMap>[] = [
     },
   },
   {
-    id: "actions",
+    id: "updateMap",
     header: () => <div className="text-center">編集</div>,
     cell: ({ row }) => (
       <div className="flex justify-center">
