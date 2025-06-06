@@ -42,6 +42,7 @@ export type Database = {
           is_public: boolean
           lat: number
           lng: number
+          short_id: string | null
           tag_id: string
           team_id: string
         }
@@ -52,6 +53,7 @@ export type Database = {
           is_public?: boolean
           lat?: number
           lng?: number
+          short_id?: string | null
           tag_id?: string
           team_id?: string
         }
@@ -62,6 +64,7 @@ export type Database = {
           is_public?: boolean
           lat?: number
           lng?: number
+          short_id?: string | null
           tag_id?: string
           team_id?: string
         }
@@ -130,6 +133,22 @@ export type Database = {
       get_team_pins: {
         Args: { team_ids: string[] }
         Returns: Json
+      }
+      hash_encode: {
+        Args: { "": number }
+        Returns: string
+      }
+      id_decode: {
+        Args: { "": string }
+        Returns: number[]
+      }
+      id_decode_once: {
+        Args: { "": string }
+        Returns: number
+      }
+      id_encode: {
+        Args: { "": number[] } | { "": number }
+        Returns: string
       }
     }
     Enums: {

@@ -6,6 +6,7 @@ export type RedTeam = {
 
 export type RedMap = {
   id: number;
+  short_id: string;
   lat: number;
   lng: number;
   content: string;

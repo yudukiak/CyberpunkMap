@@ -38,6 +38,10 @@ function MoveMapCenter(lat: number, lng: number) {
 
 export const columns: ColumnDef<RedMap>[] = [
   {
+    accessorKey: "id",
+    header: "ID",
+  },
+  {
     id: "moveMapCenter",
     header: () => <div className="text-center">移動</div>,
     cell: (context) => {
@@ -69,6 +73,10 @@ export const columns: ColumnDef<RedMap>[] = [
         </Link>
       </div>
     ),
+  },
+  {
+    accessorKey: "short_id",
+    header: "Short ID",
   },
   {
     accessorKey: "title",

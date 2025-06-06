@@ -32,13 +32,14 @@ type MapProps = {
   dev: boolean,
 }
 
-export default function Map({ pins, dev }: MapProps) {
+export default function Map({ pins: pinsRaw, dev }: MapProps) {
   // コンソールログを出力する関数
   function debugLog(...args: any[]) {
     if (dev) console.log(...args);
   }
 
-  if (pins == null) throw { message: "情報の取得に失敗しました" };
+  if (pinsRaw == null) throw { message: "情報の取得に失敗しました" };
+  const [pins, setPins] = useState<PinsLeafletObjectType[]>(pinsRaw);
 
   const mapRef = useRef<LeafletMap>(null);
   const [isMapReady, setIsMapReady] = useState(false);
@@ -68,6 +69,11 @@ export default function Map({ pins, dev }: MapProps) {
               mapRef.current?.setView([lat, lng], mapRef.current.getZoom());
             }
           }
+          if (parsed.type === "updatePins") {
+            const { pins } = parsed;
+            debugLog("🔁 updatePins", pins);
+            setPins(pins);
+          }
         }
       } catch (error) {
         console.error("❌ WebSocketメッセージ処理エラー:", error);
@@ -80,57 +86,6 @@ export default function Map({ pins, dev }: MapProps) {
       wsRef.current?.close();
     };
   }, [isMapReady]);
-
-  /*
-  useEffect(() => {
-    if (!isMapReady) return;
-
-    let retryTimeout: number;
-    const connect = () => {
-      const wsProtocol = window.location.protocol === "https:" ? "wss" : "ws";
-      const wlPort = window.location.port;
-      const wsPort = vsPort ? vsPort : wlPort === "" ? "" : `:${wlPort}`;
-      const ws = new WebSocket(
-        `${wsProtocol}://${window.location.hostname}${wsPort}/ws`
-      );
-
-      ws.onopen = () => debugLog("✅ WebSocket 接続成功");
-      ws.onclose = () => {
-        debugLog("⏸️ WebSocket 切断 → 再接続します");
-        retryTimeout = window.setTimeout(connect, 3000);
-      };
-      ws.onerror = (err) => {
-        debugLog("❌ WebSocket エラー:", err);
-        ws.close();
-      };
-      ws.onmessage = (event) => {
-        try {
-          const { data } = event;
-          debugLog("ℹ️ WebSocket メッセージ受信", data);
-          
-          if (data === "redMapUpdated") {
-            debugLog("🔁 redMapUpdated");
-            revalidator.revalidate();
-          } else if (typeof data === 'string' && data.startsWith('{')) {
-            const parsed = JSON.parse(data);
-            if (parsed.type === "moveMapCenter") {
-              const { lat, lng } = parsed;
-              debugLog("🔁 moveMapCenter", { lat, lng });
-              mapRef.current?.setView([lat, lng], mapRef.current.getZoom());
-            }
-          } else if (data === "keepalive") {
-            debugLog("📡 keepalive", new Date().toLocaleString("ja-JP"));
-          }
-        } catch (error) {
-          debugLog("❌ WebSocketメッセージ処理エラー:", error);
-        }
-      };
-    };
-
-    connect();
-    return () => clearTimeout(retryTimeout);
-  }, [isMapReady, revalidator]);
-  */
 
   const LayersControlList = pins.map(({ name, pins }, index) => {
     const pinsList = pins.map(
