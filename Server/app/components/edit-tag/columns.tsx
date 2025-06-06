@@ -7,6 +7,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Link } from "react-router";
 
 export const columns: ColumnDef<RedTag>[] = [
+  /*
   {
     id: "actions",
     header: () => <div className="text-center">編集</div>,
@@ -22,6 +23,7 @@ export const columns: ColumnDef<RedTag>[] = [
       </div>
     ),
   },
+  */
   {
     accessorKey: "tag_id",
     header: "タグID",

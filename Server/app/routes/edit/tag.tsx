@@ -22,11 +22,13 @@ export default function TagPage({ loaderData }: Route.ComponentProps) {
       <div className="h-full p-4">
         <DataTable columns={columns} data={data} />
       </div>
+      {/*
       <Link to="/edit/tag/add" className="fixed top-1.5 right-1.5 z-11">
         <Button variant="outline" className="h-9 w-9">
           <Plus />
         </Button>
       </Link>
+      */}
       <Outlet />
     </>
   );
