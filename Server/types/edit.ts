@@ -12,11 +12,10 @@ export type RedMap = {
   created_at: string;
   is_public: boolean;
   team_id: string;
-  tag: string;
+  tag_id: string;
 };
 
-export type LoaderData = {
-  team: RedTeam[],
-  redMap: RedMap[],
-  error: string | null,
-}
+export type RedTag = {
+  id: string;
+  name: string;
+};

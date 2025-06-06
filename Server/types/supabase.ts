@@ -36,36 +36,43 @@ export type Database = {
     Tables: {
       red_map: {
         Row: {
-          content: string | null
+          content: string
           created_at: string
           id: number
           is_public: boolean
           lat: number
           lng: number
-          tag: string | null
-          team_id: string | null
+          tag_id: string
+          team_id: string
         }
         Insert: {
-          content?: string | null
+          content?: string
           created_at?: string
           id?: number
           is_public?: boolean
           lat?: number
           lng?: number
-          tag?: string | null
-          team_id?: string | null
+          tag_id?: string
+          team_id?: string
         }
         Update: {
-          content?: string | null
+          content?: string
           created_at?: string
           id?: number
           is_public?: boolean
           lat?: number
           lng?: number
-          tag?: string | null
-          team_id?: string | null
+          tag_id?: string
+          team_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "red_map_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "red_tag"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "red_map_team_id_fkey"
             columns: ["team_id"]
@@ -75,21 +82,36 @@ export type Database = {
           },
         ]
       }
+      red_tag: {
+        Row: {
+          id: string
+          name: string
+        }
+        Insert: {
+          id?: string
+          name?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       red_team: {
         Row: {
           id: string
           is_public: boolean
-          name: string | null
+          name: string
         }
         Insert: {
-          id: string
+          id?: string
           is_public?: boolean
-          name?: string | null
+          name?: string
         }
         Update: {
           id?: string
           is_public?: boolean
-          name?: string | null
+          name?: string
         }
         Relationships: []
       }
@@ -98,7 +120,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_all_team_pins: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
+      get_team_pins: {
+        Args: { team_ids: string[] }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never

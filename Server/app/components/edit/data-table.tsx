@@ -58,7 +58,7 @@ export default function DataTable<TData, TValue>({
               <TableRow
                 key={row.id}
                 data-state={row.getIsSelected() && "selected"}
-                className={`${(row.original as RedTeam | RedMap).is_public ? "" : "text-neutral-400"}`}
+                className={`${(row.original as RedTeam | RedMap).is_public ? "" : "opacity-30"}`}
               >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>

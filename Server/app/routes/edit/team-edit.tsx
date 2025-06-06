@@ -1,7 +1,7 @@
-import type { Route } from "./+types/teamId";
+import type { Route } from "./+types/team-edit";
 import type { RedTeam } from "types/edit";
 import { useEffect } from "react";
-import { useFetcher, useNavigate } from "react-router";
+import { useFetcher, useNavigate, redirect } from "react-router";
 import { createClient } from "~/lib/supabase";
 import Error from "~/components/error";
 import Loading from "~/components/loading";
@@ -15,6 +15,13 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner"
@@ -33,13 +40,16 @@ export async function action({ request }: Route.ActionArgs) {
 export async function loader({ params, request }: Route.LoaderArgs) {
   const { teamId } = params;
   const { supabase } = createClient(request, "public");
-  const { data, error } = await supabase.from("red_team").select("*").eq("id", teamId);
-  return { data, error };
+  const { data: teams, error } = await supabase.from("red_team").select("*");
+  const team = teams?.find((t) => t.id === teamId) || [];
+  //const { data, error } = await supabase.from("red_team").select("*").eq("id", teamId);
+  if (team == null || team.length === 0) return redirect("../");
+  return { teams, team, error };
 }
 
-export default function TeamId({ loaderData }: Route.ComponentProps) {
-  const { data, error } = loaderData;
-  if (error || data == null) return <ErrorBoundary />;
+export default function TeamEdit({ loaderData }: Route.ComponentProps) {
+  const { teams, team, error } = loaderData;
+  if (error || teams == null || team == null) return <ErrorBoundary />;
   let fetcher = useFetcher();
   const navigate = useNavigate();
   const isLoading = fetcher.state !== "idle";
@@ -66,7 +76,7 @@ export default function TeamId({ loaderData }: Route.ComponentProps) {
           <DialogDescription>チームの編集を行います。</DialogDescription>
         </DialogHeader>
         <fetcher.Form method="post">
-          <TeamForm data={data[0]} />
+          <TeamForm teams={teams} team={team[0]} />
           <Button type="submit" className="block m-auto">
             Save changes
           </Button>
@@ -82,8 +92,13 @@ export default function TeamId({ loaderData }: Route.ComponentProps) {
   );
 }
 
-function TeamForm({ data }: { data: RedTeam }) {
-  const { id, name, is_public } = data;
+type TeamFormProps = {
+  teams: RedTeam[];
+  team: RedTeam;
+}
+
+function TeamForm({ teams, team }: TeamFormProps) {
+  const { id, name, is_public } = team;
   return (
     <>
       <div className="grid gap-4 py-4">

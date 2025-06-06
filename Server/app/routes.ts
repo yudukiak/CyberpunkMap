@@ -14,10 +14,11 @@ export default [
     layout("routes/edit/layout.tsx", [
       index("routes/edit/index.tsx"),
       route("team", "routes/edit/team.tsx", [
-        route(":teamId", "routes/edit/teamId.tsx"),
+        route(":teamId", "routes/edit/team-edit.tsx"),
       ]),
       route("map", "routes/edit/map.tsx", [
-        route(":mapId", "routes/edit/mapId.tsx"),
+        route(":mapId", "routes/edit/map-edit.tsx"),
+        route("add", "routes/edit/map-add.tsx"),
       ]),
     ]),
   ]),

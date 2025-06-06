@@ -20,21 +20,21 @@ export function decoratePins(pinsRaw: PinsRawObjectType[]): PinsLeafletObjectTyp
   return pinsRaw.map((pinRaw) => {
     const { name, pins } = pinRaw;
     const decoratedPins = pins.map((pin) => {
-      const { lat, lng, content, tag, is_public } = pin;
+      const { lat, lng, content, tag_id, is_public } = pin;
       let className = pinColor.gray;
       let zIndexOffset = 0;
-      if (tag === "location") {
+      if (tag_id === "location") {
         className = pinColor.blue;
         zIndexOffset = 10000;
       }
-      if (tag === "event") {
+      if (tag_id === "event") {
         className = pinColor.red;
         zIndexOffset = 10000;
       }
       if (is_public === false) {
         className += " brightness-50";
       }
-      return { lat, lng, content, tag, className, zIndexOffset };
+      return { lat, lng, content, tag_id, className, zIndexOffset };
     });
     return { name, pins: decoratedPins };
   });

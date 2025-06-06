@@ -1,9 +1,11 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import type { RedMap } from "types/edit";
 import { MODE, DEV_WS_PORT, SERVER_PORT } from "~/config/vite";
+import { getColor } from "~/lib/color-library";
 import { useEffect, useRef } from "react";
 import { Link } from "react-router";
-import { Pencil } from "lucide-react";
+import { Pencil, Info, MapPinned } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Tooltip,
@@ -11,86 +13,116 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
+function MoveMapCenter(lat: number, lng: number) {
+  console.log("送信開始");
+  const wsProtocol =
+    window.location.protocol === "https:" ? "wss" : "ws";
+  const wsPort = MODE === "development" ? DEV_WS_PORT : SERVER_PORT;
+  const wsUrl = `${wsProtocol}://${window.location.hostname}:${wsPort}/ws`;
+  console.log("wsUrl", wsUrl);
+  const ws = new window.WebSocket(wsUrl);
+  ws.onopen = () => {
+    ws.send(
+      JSON.stringify({
+        type: "moveMapCenter",
+        latlng: { lat, lng },
+      })
+    );
+    ws.close();
+    console.log("送信完了");
+  };
+  ws.onerror = () => {
+    alert("WebSocket送信に失敗しました");
+  };
+}
+
 export const columns: ColumnDef<RedMap>[] = [
   {
     id: "moveMapCenter",
+    header: () => <div className="text-center">移動</div>,
     cell: (context) => {
       const { row } = context as any;
       return (
-        <Button
-          variant="outline"
-          onClick={() => {
-            console.log("送信開始")
-            const wsProtocol = window.location.protocol === "https:" ? "wss" : "ws";
-            const wsPort = MODE === "development" ? DEV_WS_PORT : SERVER_PORT;
-            const wsUrl = `${wsProtocol}://${window.location.hostname}:${wsPort}/ws`;
-            console.log("wsUrl", wsUrl)
-            const ws = new window.WebSocket(wsUrl);
-            ws.onopen = () => {
-              ws.send(
-                JSON.stringify({
-                  type: "moveMapCenter",
-                  latlng: { lat: row.original.lat, lng: row.original.lng },
-                })
-              );
-              ws.close();
-              console.log("送信完了")
-            };
-            ws.onerror = () => {
-              alert("WebSocket送信に失敗しました");
-            };
-          }}
-        >
-          移動
-        </Button>
+        <div className="flex justify-center">
+          <Button
+            variant="outline"
+            className="cursor-pointer"
+            onClick={() => MoveMapCenter(row.original.lat, row.original.lng)}
+          >
+            <MapPinned />
+          </Button>
+        </div>
       );
     },
   },
   {
     id: "actions",
+    header: () => <div className="text-center">編集</div>,
     cell: ({ row }) => (
-      <Link
-        to={`/edit/map/${row.original.id}`}
-        className={buttonVariants({ variant: "outline" })}
-        preventScrollReset={true}
-      >
-        <Pencil className="h-4 w-4" />
-      </Link>
+      <div className="flex justify-center">
+        <Link
+          to={`/edit/map/${row.original.id}`}
+          className={`${buttonVariants({ variant: "outline" })} h-9 w-9`}
+          preventScrollReset={true}
+        >
+          <Pencil />
+        </Link>
+      </div>
     ),
   },
   {
-    accessorKey: "content",
-    header: "内容",
+    accessorKey: "title",
+    header: "タイトル",
     cell: ({ row }) => {
       const content = row.original.content;
       const contentArray = content.split("\n");
       const contentHeader = contentArray[0];
+      return <p>{contentHeader}</p>;
+    },
+  },
+  {
+    accessorKey: "content",
+    header: () => <div className="text-center">内容</div>,
+    cell: ({ row }) => {
+      const content = row.original.content;
       return (
-        <Tooltip>
-          <TooltipTrigger className="w-full text-left">
-            <div className="truncate max-w-48">{contentHeader}</div>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p className="whitespace-pre-wrap">{content}</p>
-          </TooltipContent>
-        </Tooltip>
+        <div className="flex justify-center">
+          <Tooltip>
+            <TooltipTrigger className="h-9 w-9 flex justify-center items-center">
+              <Info />
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="whitespace-pre-wrap">{content}</p>
+            </TooltipContent>
+          </Tooltip>          
+        </div>
       );
     },
   },
   {
     accessorKey: "team_id",
-    header: "チームID",
+    header: () => <div className="text-center">チームID</div>,
+    cell: ({ row }) => {
+      const teamId = row.original.team_id;
+      const className = getColor({ team_id: teamId })?.team.background;
+      return <Badge variant="secondary" className={className}>{teamId}</Badge>;
+    },
   },
   {
-    accessorKey: "tag",
-    header: "タグ",
+    accessorKey: "tag_id",
+    header: () => <div className="text-center">タグ</div>,
+    cell: ({ row }) => {
+      const tagId = row.original.tag_id;
+      const className = getColor({ tag_id: tagId })?.tag.background;
+      return <Badge variant="secondary" className={className}>{tagId}</Badge>;
+    },
   },
   {
     accessorKey: "lat",
-    header: "緯度",
+    header: () => <div className="text-center">緯度</div>,
   },
   {
     accessorKey: "lng",
-    header: "経度",
+    header: () => <div className="text-center">経度</div>,
   },
 ];
