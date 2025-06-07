@@ -56,6 +56,9 @@ export default function RedMap({ pins: pinsRaw, dev }: MapProps) {
   
   const wsRef = useRef<WebSocket | null>(null);
   useEffect(() => {
+    const queryString = window.location.search;
+    const queryParams = new URLSearchParams(queryString);
+    
     if (!isMapReady) return;
     const wsProtocol = window.location.protocol === "https:" ? "wss" : "ws";
     const wsPort = MODE === "development" ? DEV_WS_PORT : SERVER_PORT;
@@ -98,7 +101,14 @@ export default function RedMap({ pins: pinsRaw, dev }: MapProps) {
           const { lat, lng } = parsed.data || {};
           debugLog("🔁 moveMapCenter", { lat, lng });
           if (lat != null && lng != null) {
-            setMoveMapCenterData(parsed.data);
+            // クエリ文字列を取得
+            const skipDialog = queryParams.get("skipDialog");
+            if (skipDialog === "true") {
+              mapRef.current?.setView([lat, lng], mapRef.current.getZoom());
+            } else {
+              // ダイアログボックスを表示
+              setMoveMapCenterData(parsed.data);
+            }
           }
         }
         // 読込時にマップの移動
@@ -106,8 +116,14 @@ export default function RedMap({ pins: pinsRaw, dev }: MapProps) {
           const { lat, lng } = parsed.data || {};
           debugLog("🔁 getMoveMapCenter", { lat, lng });
           if (lat != null && lng != null) {
-            // ダイアログボックスを表示
-            setMoveMapCenterData(parsed.data);
+            // クエリ文字列を取得
+            const skipDialog = queryParams.get("skipDialog");
+            if (skipDialog === "true") {
+              mapRef.current?.setView([lat, lng], mapRef.current.getZoom());
+            } else {
+              // ダイアログボックスを表示
+              setMoveMapCenterData(parsed.data);
+            }
           }
         }
         // マップの更新
