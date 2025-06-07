@@ -1,4 +1,4 @@
-import type { PinsLeafletObjectType, PinsLeafletType } from "types/map";
+import type { PinsLeafletObjectType, PinsLeafletType, MoveMapCenterType } from "types/map";
 import {
   MapContainer,
   TileLayer,
@@ -11,6 +11,7 @@ import {
 import { useEffect, useRef, useState, useCallback } from "react";
 import { CRS, Icon, Map as LeafletMap } from "leaflet";
 import { MODE, DEV_WS_PORT, SERVER_PORT } from "~/config/vite";
+import Dialog from "./dialog";
 
 function ClipboardMapClick() {
   useMapEvents({
@@ -33,21 +34,25 @@ type MapProps = {
 }
 
 export default function RedMap({ pins: pinsRaw, dev }: MapProps) {
-  // コンソールログを出力する関数
+  // ピンの情報
+  if (pinsRaw == null) throw { message: "情報の取得に失敗しました" };
+  const [pins, setPins] = useState<PinsLeafletObjectType[]>(pinsRaw);
+
+  // コンソールログ
   function debugLog(...args: any[]) {
     if (dev) console.log(...args);
   }
 
-  if (pinsRaw == null) throw { message: "情報の取得に失敗しました" };
-  const [pins, setPins] = useState<PinsLeafletObjectType[]>(pinsRaw);
-
+  // マップ（MapContainer）の操作
   const mapRef = useRef<LeafletMap>(null);
   const [isMapReady, setIsMapReady] = useState(false);
-
   const handleMapReady = useCallback(() => {
     debugLog("✅ MapContainer 初期化完了");
     setIsMapReady(true);
   }, []);
+
+  // ダイアログボックス
+  const [moveMapCenterData, setMoveMapCenterData] = useState<MoveMapCenterType | null>(null);
   
   const wsRef = useRef<WebSocket | null>(null);
   useEffect(() => {
@@ -88,20 +93,24 @@ export default function RedMap({ pins: pinsRaw, dev }: MapProps) {
         const parsed = JSON.parse(data);
         const type = parsed.type;
         debugLog("📩 WebSocket type", type);
+        // マップの移動
         if (type === "moveMapCenter") {
           const { lat, lng } = parsed.data || {};
           debugLog("🔁 moveMapCenter", { lat, lng });
           if (lat != null && lng != null) {
-            mapRef.current?.setView([lat, lng], mapRef.current.getZoom());
+            setMoveMapCenterData(parsed.data);
           }
         }
+        // 読込時にマップの移動
         if (type === "getMoveMapCenter") {
           const { lat, lng } = parsed.data || {};
           debugLog("🔁 getMoveMapCenter", { lat, lng });
           if (lat != null && lng != null) {
-            mapRef.current?.setView([lat, lng], mapRef.current.getZoom());
+            // ダイアログボックスを表示
+            setMoveMapCenterData(parsed.data);
           }
         }
+        // マップの更新
         if (type === "updateMap") {
           const updateObjects: PinsLeafletObjectType[] = parsed.data || [];
           debugLog("📦 updateMap 送信されたデータ", updateObjects.concat());
@@ -195,6 +204,7 @@ export default function RedMap({ pins: pinsRaw, dev }: MapProps) {
   });
 
   return (
+    <>
     <MapContainer
       ref={mapRef}
       center={[-128, 128]}
@@ -221,5 +231,20 @@ export default function RedMap({ pins: pinsRaw, dev }: MapProps) {
       {dev && <ClipboardMapClick />}
       <LayersControl>{LayersControlList}</LayersControl>
     </MapContainer>
+    {moveMapCenterData && (
+      <Dialog
+        data={moveMapCenterData}
+        onResult={(result) => {
+          setMoveMapCenterData(null);
+          if (result && moveMapCenterData) {
+            mapRef.current?.setView(
+              [moveMapCenterData.lat, moveMapCenterData.lng],
+              mapRef.current.getZoom()
+            );
+          }
+        }}
+      />
+    )}
+    </>
   );
 }

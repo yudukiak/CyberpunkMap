@@ -30,3 +30,9 @@ export type PinsLeafletObjectType = {
   pins: PinsLeafletType[];
 };
 
+export type MoveMapCenterType = {
+  lat: number;
+  lng: number;
+  content: string;
+  date: string;
+}
