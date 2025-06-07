@@ -22,13 +22,19 @@ function setupWebSocketServer(server, port) {
     ws.on("message", (message) => {
       const messageString = message.toString();
       console.log("📩 WebSocket受信: ", messageString);
+      //console.log("📦 保存済みのclientRoutes", clientRoutes) // ws: path
+      console.log("📦 保存済みのmoveMapCenterData", moveMapCenterData) // path: json
       try {
         const json = JSON.parse(messageString);
         // 👣 クライアントから初回に「ルート通知」された場合
         if (json.type === "initRoute" && typeof json.route === "string") {
-          clientRoutes.set(ws, json.route); // ← 例: /red/miscrunners
+          // clientRoutesに ws: /red/miscrunners を保存
+          clientRoutes.set(ws, json.route);
+          // moveMapCenterDataが空の時 かつ pathが /red/ でない時 のみ /red/miscrunners: "" を保存
+          if (!moveMapCenterData.has(json.route) && json.route !== "/red") {
+            moveMapCenterData.set(json.route, "{}");
+          }
           // routeとpathが一致する場合、moveMapCenterDataを送信
-          console.log("📦 保存済みのmoveMapCenterData", moveMapCenterData)
           const route = clientRoutes.get(ws) || "";
           const isRedTeam = route === json.route;
           const newMessageString = moveMapCenterData.get(route);
