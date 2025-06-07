@@ -108,7 +108,7 @@ export default function RedMap({ pins: pinsRaw, dev }: MapProps) {
             // クエリ文字列を取得
             const skipDialog = queryParams.get("skipDialog");
             if (skipDialog === "true") {
-              mapRef.current?.setView([lat, lng], mapRef.current.getZoom());
+              mapRef.current?.setView([lat, lng], 6); // mapRef.current.getZoom() を使用しても良い
             } else {
               // ダイアログボックスを表示
               setMoveMapCenterData(parsed.data);
@@ -123,7 +123,7 @@ export default function RedMap({ pins: pinsRaw, dev }: MapProps) {
             // クエリ文字列を取得
             const skipDialog = queryParams.get("skipDialog");
             if (skipDialog === "true") {
-              mapRef.current?.setView([lat, lng], mapRef.current.getZoom());
+              mapRef.current?.setView([lat, lng], 6);
             } else {
               // ダイアログボックスを表示
               setMoveMapCenterData(parsed.data);
@@ -259,7 +259,7 @@ export default function RedMap({ pins: pinsRaw, dev }: MapProps) {
           if (result && moveMapCenterData) {
             mapRef.current?.setView(
               [moveMapCenterData.lat, moveMapCenterData.lng],
-              mapRef.current.getZoom()
+              6
             );
           }
         }}
