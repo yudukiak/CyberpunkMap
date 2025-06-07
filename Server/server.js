@@ -1,22 +1,21 @@
 import express from "express";
 import { createRequestHandler } from "@react-router/express";
 import path from "path";
-import { fileURLToPath } from "url";
+import { fileURLToPath, pathToFileURL } from "url";
 import { createServer } from "http";
 import { WebSocketServer } from "ws";
+import fs from "fs";
 import 'dotenv/config';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+//const __filename = fileURLToPath(import.meta.url);
+//const __dirname = path.dirname(__filename);
 // 各クライアントの「現在のパス」を記憶する Map
 const clientRoutes = new Map();
 // moveMapCenterのデータを保存するMap
 const moveMapCenterData = new Map();
 
-if (process.env.NODE_ENV === "development") {
-  // WebSocketサーバーのみ起動
-  const port = process.env.VITE_DEV_WS_PORT;
-  const server = createServer();
+// WebSocketの共通ロジック
+function setupWebSocketServer(server, port) {
   const wss = new WebSocketServer({ server, path: "/ws" });
   wss.on("connection", (ws) => {
     console.log("🔌 WebSocketクライアント接続");
@@ -98,34 +97,47 @@ if (process.env.NODE_ENV === "development") {
   server.listen(port, () => {
     console.log(`🔌 WebSocket server started on ws://localhost:${port}/ws`);
   });
+}
+
+if (process.env.NODE_ENV === "development") {
+  // WebSocketサーバーのみ起動
+  const port = process.env.VITE_DEV_WS_PORT;
+  const server = createServer();
+  setupWebSocketServer(server, port);
 } else {
   // 本番等はExpress+WebSocketサーバーを起動
-  const BUILD_DIR = path.resolve(__dirname, "./build/server/index.js");
-  const build = await import(BUILD_DIR);
+  console.log("👀 ビルドファイル存在チェック")
+  const buildPath = "./build/server/index.js";
+  if (!fs.existsSync(buildPath)) {
+    console.error("❌ build/server/index.js が存在しません");
+    process.exit(1);
+  }
+  console.log("💾 React Router のビルドを安全に import");
+  let build;
+  try {
+    build = await import(buildPath);
+  } catch (err) {
+    console.error("❌ build/server/index.js が読み込めません", err);
+    process.exit(1);
+  }
 
+  // ① Express設定
   const app = express();
-  app.use(express.static(path.resolve(__dirname, "build/client")));
-  app.all("*", createRequestHandler({ build }));
+  app.set('trust proxy', true);
+  // ② 静的ファイル
+  app.use(express.static("build/client"));
+  app.use(express.static("public"));
+
+  app.all(/.*/, async (req, res, next) => {
+    try {
+      return createRequestHandler({ build })(req, res, next);
+    } catch (err) {
+      console.error("❌ SSRハンドラー内でエラー発生:", err);
+      next(err);
+    }
+  });
 
   const port = process.env.VITE_SERVER_PORT;
   const server = createServer(app);
-  const wss = new WebSocketServer({ server, path: "/ws" });
-  wss.on("connection", (ws) => {
-    console.log("🔌 WebSocketクライアント接続");
-    ws.on("message", (message) => {
-      console.log("📩 WebSocket受信: ", message.toString());
-      wss.clients.forEach((client) => {
-        if (client !== ws && client.readyState === ws.OPEN) {
-          client.send(message);
-        }
-      });
-    });
-    ws.on("close", () => {
-      console.log("❎ WebSocket切断");
-    });
-  });
-  server.listen(port, () => {
-    console.log(`🚀 Server started on http://localhost:${port}`);
-    console.log(`🔌 WebSocket server started on ws://localhost:${port}/ws`);
-  });
+  setupWebSocketServer(server, port);
 }

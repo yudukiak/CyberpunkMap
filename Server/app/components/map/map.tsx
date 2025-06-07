@@ -93,6 +93,10 @@ export default function RedMap({ pins: pinsRaw, dev }: MapProps) {
       const { data } = event;
       debugLog("📩 WebSocketメッセージ受信", data);
       try {
+        // dataが文字列でない場合は処理しない
+        if (typeof data !== "string") return;
+        // dataがJSONでない場合は処理しない
+        if (!data.startsWith('{')) return;
         const parsed = JSON.parse(data);
         const type = parsed.type;
         debugLog("📩 WebSocket type", type);
@@ -177,11 +181,11 @@ export default function RedMap({ pins: pinsRaw, dev }: MapProps) {
           })
         }
       } catch (error) {
-        console.error("❌ WebSocketメッセージ処理エラー:", error);
+        console.error("❌ WebSocket - parse: ", error);
       }
     };
     wsRef.current.onerror = (err) => {
-      console.error("❌ WebSocketエラー", err);
+      console.error("❌ WebSocket: ", err);
     };
     return () => {
       wsRef.current?.close();
