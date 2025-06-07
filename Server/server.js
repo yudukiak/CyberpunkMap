@@ -36,7 +36,8 @@ if (process.env.NODE_ENV === "development") {
           console.log("📦 保存済みのnewMessageString", newMessageString)
           if (newMessageString) {
             const newMessage = JSON.parse(newMessageString);
-            const isExpired = newMessage && new Date(newMessage.date) < new Date(Date.now() - 3 * 60 * 60 * 1000); // 3時間以降は送信しない
+            // 1時間を経過したものは送信しない
+            const isExpired = newMessage && new Date(newMessage.date) < new Date(Date.now() - 1 * 60 * 60 * 1000);
             console.log('🧷 チームのページ？', isRedTeam)
             console.log('⏰ 期限切れてる？', isExpired)
             if (isRedTeam && !isExpired) {
