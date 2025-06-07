@@ -63,7 +63,10 @@ export default function RedMap({ pins: pinsRaw, dev }: MapProps) {
     const sendInitRoute = () => {
       if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
       try {
-        wsRef.current.send(JSON.stringify({ type: "initRoute", route: window.location.pathname }));
+        // パスの末尾の "/" を削除
+        const path = window.location.pathname;
+        const route = path.endsWith("/") && path !== "/" ? path.slice(0, -1) : path;
+        wsRef.current.send(JSON.stringify({ type: "initRoute", route }));
         debugLog("✅ initRoute送信成功");
       } catch (e) {
         if (retryCount < maxRetries) {
@@ -88,6 +91,13 @@ export default function RedMap({ pins: pinsRaw, dev }: MapProps) {
         if (type === "moveMapCenter") {
           const { lat, lng } = parsed.data || {};
           debugLog("🔁 moveMapCenter", { lat, lng });
+          if (lat != null && lng != null) {
+            mapRef.current?.setView([lat, lng], mapRef.current.getZoom());
+          }
+        }
+        if (type === "getMoveMapCenter") {
+          const { lat, lng } = parsed.data || {};
+          debugLog("🔁 getMoveMapCenter", { lat, lng });
           if (lat != null && lng != null) {
             mapRef.current?.setView([lat, lng], mapRef.current.getZoom());
           }

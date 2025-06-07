@@ -10,6 +10,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 // 各クライアントの「現在のパス」を記憶する Map
 const clientRoutes = new Map();
+// moveMapCenterのデータを保存するMap
+const moveMapCenterData = new Map();
 
 if (process.env.NODE_ENV === "development") {
   // WebSocketサーバーのみ起動
@@ -26,24 +28,50 @@ if (process.env.NODE_ENV === "development") {
         // 👣 クライアントから初回に「ルート通知」された場合
         if (json.type === "initRoute" && typeof json.route === "string") {
           clientRoutes.set(ws, json.route); // ← 例: /red/miscrunners
+          // routeとpathが一致する場合、moveMapCenterDataを送信
+          console.log("📦 保存済みのmoveMapCenterData", moveMapCenterData)
+          const route = clientRoutes.get(ws) || "";
+          const isRedTeam = route === json.route;
+          const newMessageString = moveMapCenterData.get(route);
+          console.log("📦 保存済みのnewMessageString", newMessageString)
+          if (newMessageString) {
+            const newMessage = JSON.parse(newMessageString);
+            const isExpired = newMessage && new Date(newMessage.date) < new Date(Date.now() - 3 * 60 * 60 * 1000); // 3時間以降は送信しない
+            console.log('🧷 チームのページ？', isRedTeam)
+            console.log('⏰ 期限切れてる？', isExpired)
+            if (isRedTeam && !isExpired) {
+              console.log("📩 WebSocket送信: ", newMessageString)
+              ws.send(newMessageString);
+            }
+          }
           return;
+        }
+        // moveMapCenterのデータを保存
+        if (json.type === "moveMapCenter") {
+          // typeを変えておく
+          const newMessage = {
+            ...json,
+            type: "getMoveMapCenter",
+          }
+          const newMessageString = JSON.stringify(newMessage);
+          moveMapCenterData.set(json.path, newMessageString);
         }
         // マップの移動または更新通知が来た場合、team_idを対象に送信
         if (json.type === "moveMapCenter" || json.type === "updateMap") {
-          const targetTeamId = json.team_id;
-          const isRulebook = targetTeamId === "rulebook"; // チームIDが「rulebook」
+          const targetPath = json.path;
+          const isRulebook = targetPath === "/red/rulebook";
           wss.clients.forEach((client) => {
             const route = clientRoutes.get(client) || "";
-            const isEdit = route.startsWith("/edit"); // 編集ページ
-            const isRedSubPage = route.startsWith("/red/") && route !== "/red/"; // サブページ
-            const isRedTeam = route.startsWith(`/red/${targetTeamId}`); // チームページ
-            const isTarget =
-              // ルールブック以外は チームページ もしくは 編集ページ を対象とする
-              (!isRulebook && (isRedTeam || isEdit)) ||
-              // ルールブックは サブページ もしくは 編集ページ を対象とする
-              (isRulebook && (isRedSubPage || isEdit));
-            if (isTarget && client.readyState === WebSocket.OPEN) {
-              console.log("📩 WebSocket送信: ", messageString);
+            // チームページには送信
+            if (route === targetPath) {
+              client.send(messageString);
+            }
+            // ルールブックの時は全てのチームページに送信
+            if (isRulebook && /^\/red\/[a-zA-Z0-9]+$/.test(route)) {
+              client.send(messageString);
+            }
+            // 編集ページは全て送信
+            if (route.startsWith("/edit")) {
               client.send(messageString);
             }
           });

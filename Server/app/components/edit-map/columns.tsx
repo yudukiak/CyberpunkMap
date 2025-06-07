@@ -13,7 +13,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-function moveMapCenter(team_id: string, lat: number, lng: number) {
+function moveMapCenter(redMap: RedMap) {
+  const { team_id, lat, lng, content } = redMap;
   console.log("送信開始");
   const wsProtocol =
     window.location.protocol === "https:" ? "wss" : "ws";
@@ -25,8 +26,9 @@ function moveMapCenter(team_id: string, lat: number, lng: number) {
     ws.send(
       JSON.stringify({
         type: "moveMapCenter",
-        team_id: team_id,
-        data: { lat, lng },
+        path: `/red/${team_id}`,
+        data: { lat, lng, content },
+        date: new Date().toISOString(),
       })
     );
     ws.close();
@@ -52,10 +54,7 @@ export const columns: ColumnDef<RedMap>[] = [
           <Button
             variant="outline"
             className="cursor-pointer"
-            onClick={() => {
-              const { team_id, lat, lng } = row.original;
-              moveMapCenter(team_id, lat, lng);
-            }}
+            onClick={() => moveMapCenter(row.original)}
           >
             <MapPinned />
           </Button>

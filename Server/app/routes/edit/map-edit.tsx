@@ -102,7 +102,7 @@ function updateMap(updateData: RedMap, name: string) {
     ws.send(
       JSON.stringify({
         type: "updateMap",
-        team_id: team_id,
+        path: `/red/${team_id}`,
         data: decoratedPins,
       })
     );
