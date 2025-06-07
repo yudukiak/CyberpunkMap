@@ -54,7 +54,16 @@ if (process.env.NODE_ENV === "development") {
             type: "getMoveMapCenter",
           }
           const newMessageString = JSON.stringify(newMessage);
-          moveMapCenterData.set(json.path, newMessageString);
+          const targetPath = json.path;
+          const isRulebook = targetPath === "/red/rulebook";
+          // ルールブックの時は全valueを書き換え
+          if (isRulebook) {
+            for (const [key] of moveMapCenterData.entries()) {
+              moveMapCenterData.set(key, newMessageString);
+            }
+          } else {
+            moveMapCenterData.set(json.path, newMessageString);
+          }
         }
         // マップの移動または更新通知が来た場合、team_idを対象に送信
         if (json.type === "moveMapCenter" || json.type === "updateMap") {
