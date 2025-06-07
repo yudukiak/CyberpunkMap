@@ -26,7 +26,7 @@ export default function Dialog({ data, onResult }: { data: MoveMapCenterType, on
             </div>
             マップの移動をする？
           </AlertDialogTitle>
-          <AlertDialogDescription className="w-full">
+          <AlertDialogDescription asChild>
             <Card className="w-full">
               <ScrollArea className="h-24">
                 <CardContent className="text-center whitespace-pre-line">
