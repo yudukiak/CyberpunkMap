@@ -92,12 +92,10 @@ export default function RedMap({ pins: pinsRaw, dev }: MapProps) {
             mapRef.current?.setView([lat, lng], mapRef.current.getZoom());
           }
         }
-        // Todo:
-        // - is_publicがfalseの場合は対象を削除
         if (type === "updateMap") {
           const updateObjects: PinsLeafletObjectType[] = parsed.data || [];
-          debugLog("🔁 updateMap", updateObjects);
-          debugLog("🔁 updateMap", pins);
+          debugLog("📦 updateMap 送信されたデータ", updateObjects.concat());
+          debugLog("📦 updateMap 保存済みデータ", pins.concat());
           // 送信されたデータを1つずつ処理
           updateObjects.forEach((updateObject) => {
             const updateTeamId = updateObject.team_id;
@@ -120,7 +118,13 @@ export default function RedMap({ pins: pinsRaw, dev }: MapProps) {
                 pinMap.set(newPin.short_id, newPin); // 上書き or 新規追加
               }
               // マップを配列に戻す
-              const newPins = Array.from(pinMap.values());
+              let newPins = Array.from(pinMap.values());
+              // 今のパスを取得
+              const currentPath = window.location.pathname;
+              const isEdit = currentPath.startsWith("/edit");
+              // is_publicがfalseの場合は対象を削除（編集ページの場合は全て表示）
+              newPins = newPins.filter((pin) => !isEdit ? pin.is_public : true);
+              debugLog("📦 updateMap フィルター後のデータ", newPins.concat());
               // 新しいオブジェクトを作成
               const newObject = { 
                 team_id: updateTeamId,
