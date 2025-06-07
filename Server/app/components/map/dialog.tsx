@@ -27,7 +27,7 @@ export default function Dialog({ data, onResult }: { data: MoveMapCenterType, on
             マップの移動をする？
           </AlertDialogTitle>
           <AlertDialogDescription asChild>
-            <Card className="w-full">
+            <Card className="w-full py-2">
               <ScrollArea className="h-24">
                 <CardContent className="text-center whitespace-pre-line">
                   {data.content}
