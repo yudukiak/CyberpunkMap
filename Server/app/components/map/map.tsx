@@ -1,4 +1,4 @@
-import type { PinsLeafletObjectType } from "types/map";
+import type { PinsLeafletObjectType, PinsLeafletType } from "types/map";
 import {
   MapContainer,
   TileLayer,
@@ -32,7 +32,7 @@ type MapProps = {
   dev: boolean,
 }
 
-export default function Map({ pins: pinsRaw, dev }: MapProps) {
+export default function RedMap({ pins: pinsRaw, dev }: MapProps) {
   // コンソールログを出力する関数
   function debugLog(...args: any[]) {
     if (dev) console.log(...args);
@@ -82,20 +82,60 @@ export default function Map({ pins: pinsRaw, dev }: MapProps) {
       const { data } = event;
       debugLog("📩 WebSocketメッセージ受信", data);
       try {
-        if (typeof data === 'string' && data.startsWith('{')) {
-          const parsed = JSON.parse(data);
-          if (parsed.type === "moveMapCenter") {
-            const { lat, lng } = parsed.data || {};
-            debugLog("🔁 moveMapCenter", { lat, lng });
-            if (lat != null && lng != null) {
-              mapRef.current?.setView([lat, lng], mapRef.current.getZoom());
+        const parsed = JSON.parse(data);
+        const type = parsed.type;
+        debugLog("📩 WebSocket type", type);
+        if (type === "moveMapCenter") {
+          const { lat, lng } = parsed.data || {};
+          debugLog("🔁 moveMapCenter", { lat, lng });
+          if (lat != null && lng != null) {
+            mapRef.current?.setView([lat, lng], mapRef.current.getZoom());
+          }
+        }
+        // Todo:
+        // - is_publicがfalseの場合は対象を削除
+        if (type === "updateMap") {
+          const updateObjects: PinsLeafletObjectType[] = parsed.data || [];
+          debugLog("🔁 updateMap", updateObjects);
+          debugLog("🔁 updateMap", pins);
+          // 送信されたデータを1つずつ処理
+          updateObjects.forEach((updateObject) => {
+            const updateTeamId = updateObject.team_id;
+            const updatePins = updateObject.pins;
+            // 送信されたチームIDから保存済みのデータを取得
+            const prevObject = pins.find((prevObject) => prevObject.team_id === updateTeamId);
+            // 存在しない場合は追加保存
+            if (!prevObject) {
+              setPins((prevPins) => [...prevPins, updateObject]);
             }
-          }
-          if (parsed.type === "updatePins") {
-            const { pins }: { pins: PinsLeafletObjectType[] } = parsed;
-            debugLog("🔁 updatePins", pins);
-            //setPins(pins);
-          }
+            // 存在する場合は更新作業
+            else {
+              const prevPins = prevObject.pins;
+              // short_id と pins のマップを作成
+              const pinMap = new Map<string, PinsLeafletType>();
+              prevPins.forEach((pin) => {
+                pinMap.set(pin.short_id, pin);
+              });
+              for (const newPin of updatePins) {
+                pinMap.set(newPin.short_id, newPin); // 上書き or 新規追加
+              }
+              // マップを配列に戻す
+              const newPins = Array.from(pinMap.values());
+              // 新しいオブジェクトを作成
+              const newObject = { 
+                team_id: updateTeamId,
+                name: prevObject.name,
+                pins: newPins,
+              };
+              // 保存する
+              setPins((prevPins) => {
+                return prevPins.map((prevPin) => {
+                  if (prevPin.team_id === updateTeamId) return newObject;
+                  return prevPin;
+                });
+              });
+            }
+          })
         }
       } catch (error) {
         console.error("❌ WebSocketメッセージ処理エラー:", error);
