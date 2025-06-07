@@ -40,12 +40,16 @@ function setupWebSocketServer(server, port) {
           const newMessageString = moveMapCenterData.get(route);
           console.log("📦 保存済みのnewMessageString", newMessageString)
           if (newMessageString) {
+            const isEmpty = newMessageString === "{}";
+            console.log('isEmpty:', isEmpty)
             const newMessage = JSON.parse(newMessageString);
             // 1時間を経過したものは送信しない
-            const isExpired = newMessage && new Date(newMessage.date) < new Date(Date.now() - 1 * 60 * 60 * 1000);
+            const hasDate = !!newMessage.date;
+            console.log('hasDate:', hasDate)
+            const isInTime = hasDate ? new Date(newMessage.date) >= new Date(Date.now() - 1 * 60 * 60 * 1000) : false;
             console.log('🧷 チームのページ？', isRedTeam)
-            console.log('⏰ 期限切れてる？', isExpired)
-            if (isRedTeam && !isExpired) {
+            console.log('⏰ 期限内？', isInTime)
+            if (isRedTeam && isInTime) {
               console.log("📩 WebSocket送信: ", newMessageString)
               ws.send(newMessageString);
             }
