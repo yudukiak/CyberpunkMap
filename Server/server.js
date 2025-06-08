@@ -147,7 +147,7 @@ if (process.env.NODE_ENV === "development") {
     }
   });
 
-  const port = process.env.VITE_SERVER_PORT;
+  const port = process.env.PORT || process.env.VITE_SERVER_PORT;
   const server = createServer(app);
   setupWebSocketServer(server, port);
 }
