@@ -1,8 +1,7 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import type { RedMap } from "types/edit";
-import { MODE, DEV_WS_PORT, SERVER_PORT, isDev } from "~/config/vite";
 import { getColor } from "~/lib/color-library";
-import { useEffect, useRef } from "react";
+import { getWebsocketUrl } from "~/lib/websocket-url";
 import { Link } from "react-router";
 import { Pencil, Info, MapPinned } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -16,15 +15,7 @@ import {
 function moveMapCenter(redMap: RedMap) {
   const { team_id, lat, lng, content } = redMap;
   console.log("送信開始");
-  //const wsProtocol =
-  //  window.location.protocol === "https:" ? "wss" : "ws";
-  //const wsPort = MODE === "development" ? DEV_WS_PORT : SERVER_PORT;
-  //const wsUrl = `${wsProtocol}://${window.location.hostname}:${wsPort}/ws`;
-  const isHttp = window.location.protocol === "http:";
-  const wsUrl = 
-    isDev ? `ws://${window.location.hostname}:${DEV_WS_PORT}/ws` : 
-    isHttp ? `ws://${window.location.hostname}:${SERVER_PORT}/ws` :
-    `wss://${window.location.hostname}/ws`;
+  const wsUrl = getWebsocketUrl()
   console.log("wsUrl", wsUrl);
   const ws = new window.WebSocket(wsUrl);
   ws.onopen = () => {

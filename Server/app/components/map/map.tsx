@@ -10,7 +10,7 @@ import {
 } from "react-leaflet";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { CRS, Icon, Map as LeafletMap } from "leaflet";
-import { MODE, DEV_WS_PORT, SERVER_PORT, isDev } from "~/config/vite";
+import { getWebsocketUrl } from "~/lib/websocket-url";
 import Dialog from "./dialog";
 
 function ClipboardMapClick() {
@@ -60,14 +60,7 @@ export default function RedMap({ pins: pinsRaw, dev }: MapProps) {
     const queryParams = new URLSearchParams(queryString);
     
     if (!isMapReady) return;
-    //const wsProtocol = window.location.protocol === "https:" ? "wss" : "ws";
-    //const wsPort = MODE === "development" ? DEV_WS_PORT : SERVER_PORT;
-    //const wsUrl = `${wsProtocol}://${window.location.hostname}:${wsPort}/ws`;
-    const isHttp = window.location.protocol === "http:";
-    const wsUrl = 
-      isDev ? `ws://${window.location.hostname}:${DEV_WS_PORT}/ws` : 
-      isHttp ? `ws://${window.location.hostname}:${SERVER_PORT}/ws` :
-      `wss://${window.location.hostname}/ws`;
+    const wsUrl = getWebsocketUrl()
     wsRef.current = new WebSocket(wsUrl);
 
     // リトライ用

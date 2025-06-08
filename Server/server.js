@@ -96,6 +96,11 @@ function setupWebSocketServer(server, port) {
           });
           return;
         }
+        // マップのリセット通知が来た場合、pathのmoveMapCenterDataを空にする
+        if (json.type === "resetMapCenter") {
+          moveMapCenterData.set(json.path, "{}");
+          return;
+        }
       } catch (error) {
         console.error("❌ JSON parse error: ", error);
       }
