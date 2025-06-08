@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { useFetcher, useNavigate, redirect } from "react-router";
 import { decoratePins } from "~/lib/decorate-pins";
 import { createClient } from "~/lib/supabase";
+import { getWebsocketUrl } from "~/lib/websocket-url";
 import Error from "~/components/error";
 import Loading from "~/components/loading";
 import { Button } from "@/components/ui/button";
@@ -91,26 +92,31 @@ function updateMap(updateData: RedMap, name: string) {
     },
   ];
   const decoratedPins = decoratePins(data);
-  console.log("送信開始");
-  const wsProtocol =
-    window.location.protocol === "https:" ? "wss" : "ws";
-  const wsPort = MODE === "development" ? DEV_WS_PORT : SERVER_PORT;
-  const wsUrl = `${wsProtocol}://${window.location.hostname}:${wsPort}/ws`;
-  console.log("wsUrl", wsUrl);
+  const wsUrl = getWebsocketUrl()
+  toast.info(`${team_id}のマップを更新します`, {
+    description: `${wsUrl}`,
+    duration: 10*1000,
+  });
   const ws = new window.WebSocket(wsUrl);
   ws.onopen = () => {
-    ws.send(
-      JSON.stringify({
+    const message = {
         type: "updateMap",
         path: `/red/${team_id}`,
         data: decoratedPins,
-      })
-    );
+    }
+    const messageString = JSON.stringify(message);
+    ws.send(messageString);
     ws.close();
-    console.log("送信完了");
+    toast.success(`${team_id}のマップを更新しました`, {
+      description: `${messageString}`,
+      duration: 10*1000,
+    });
   };
-  ws.onerror = () => {
-    alert("WebSocket送信に失敗しました");
+  ws.onerror = (error) => {
+    console.log("WebSocket Error Event", error);
+    toast.error("WebSocket送信に失敗しました", {
+      duration: 10*1000,
+    });
   };
 }
 
@@ -122,13 +128,18 @@ export default function MapEdit({ loaderData }: Route.ComponentProps) {
   const isLoading = fetcher.state !== "idle";
   useEffect(() => {
     if (fetcher.data?.error) {
-      toast.error(fetcher.data.error);
+      toast.error(fetcher.data.error, {
+        duration: 10*1000,
+      });
     } else if (fetcher.data?.success) {
-      navigate("/edit/map/", { preventScrollReset: true });
       // マップの更新
       const updateData = fetcher.data.updateData;
       const teamName = teams.find((team) => team.id === updateData.team_id)?.name ?? "";
       updateMap(updateData, teamName);
+      // 10秒後に遷移
+      setTimeout(() => {
+        navigate("/edit/map/", { preventScrollReset: true });
+      }, 10*1000);
     }
   }, [fetcher.data, navigate]);
 
@@ -158,7 +169,7 @@ export default function MapEdit({ loaderData }: Route.ComponentProps) {
           )}
         </fetcher.Form>
       </DialogContent>
-      <Toaster />
+      <Toaster expand={true} richColors />
     </Dialog>
   );
 }

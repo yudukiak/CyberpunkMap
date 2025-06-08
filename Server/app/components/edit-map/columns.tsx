@@ -6,6 +6,8 @@ import { Link } from "react-router";
 import { Pencil, Info, MapPinned } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner"
 import {
   Tooltip,
   TooltipContent,
@@ -14,24 +16,33 @@ import {
 
 function moveMapCenter(redMap: RedMap) {
   const { team_id, lat, lng, content } = redMap;
-  console.log("送信開始");
   const wsUrl = getWebsocketUrl()
-  console.log("wsUrl", wsUrl);
+  toast.info(`${team_id}のマップを移動します`, {
+    description: `${wsUrl}`,
+    duration: 10*1000,
+  });
   const ws = new window.WebSocket(wsUrl);
   ws.onopen = () => {
-    ws.send(
-      JSON.stringify({
-        type: "moveMapCenter",
-        path: `/red/${team_id}`,
-        data: { lat, lng, content },
-        date: new Date().toISOString(),
-      })
-    );
+    const message = {
+      type: "moveMapCenter",
+      path: `/red/${team_id}`,
+      data: { lat, lng, content },
+      date: new Date().toISOString(),
+    }
+    const messageString = JSON.stringify(message);
+    ws.send(messageString);
     ws.close();
-    console.log("送信完了");
+    toast.success(`${team_id}のマップを移動しました`, {
+      description: `${messageString}`,
+      duration: 10*1000,
+    });
   };
-  ws.onerror = () => {
-    alert("WebSocket送信に失敗しました");
+  ws.onerror = (error) => {
+    console.log("WebSocket Error Event", error);
+    const target = error.target as WebSocket;
+    toast.error("WebSocket送信に失敗しました", {
+      duration: 10*1000,
+    });
   };
 }
 

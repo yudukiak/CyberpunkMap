@@ -2,7 +2,9 @@ import type { Route } from "./+types/map-add";
 import type { RedMap, RedTeam, RedTag } from "types/edit";
 import { useEffect } from "react";
 import { useFetcher, useNavigate } from "react-router";
+import { decoratePins } from "~/lib/decorate-pins";
 import { createClient } from "~/lib/supabase";
+import { getWebsocketUrl } from "~/lib/websocket-url";
 import Error from "~/components/error";
 import Loading from "~/components/loading";
 import { Button } from "@/components/ui/button";
@@ -69,6 +71,44 @@ export async function loader({ request }: Route.LoaderArgs) {
   return { teams, tags };
 }
 
+function updateMap(updateData: RedMap, name: string) {
+  const { team_id } = updateData;
+  const data = [
+    {
+      team_id: team_id,
+      name: name,
+      pins: [updateData],
+    },
+  ];
+  const decoratedPins = decoratePins(data);
+  const wsUrl = getWebsocketUrl()
+  toast.info(`${team_id}のマップを更新します`, {
+    description: `${wsUrl}`,
+    duration: 10*1000,
+  });
+  const ws = new window.WebSocket(wsUrl);
+  ws.onopen = () => {
+    const message = {
+        type: "updateMap",
+        path: `/red/${team_id}`,
+        data: decoratedPins,
+    }
+    const messageString = JSON.stringify(message);
+    ws.send(messageString);
+    ws.close();
+    toast.success(`${team_id}のマップを更新しました`, {
+      description: `${messageString}`,
+      duration: 10*1000,
+    });
+  };
+  ws.onerror = (error) => {
+    console.log("WebSocket Error Event", error);
+    toast.error("WebSocket送信に失敗しました", {
+      duration: 10*1000,
+    });
+  };
+}
+
 export default function MapAdd({ loaderData }: Route.ComponentProps) {
   const { teams, tags, error } = loaderData;
   if (error || teams == null || tags == null) return <ErrorBoundary />;
@@ -78,9 +118,18 @@ export default function MapAdd({ loaderData }: Route.ComponentProps) {
   useEffect(() => {
     if (fetcher.data?.error) {
       console.error('error:', fetcher.data?.error)
-      toast.error(fetcher.data.error);
+      toast.error(fetcher.data.error, {
+        duration: 10*1000,
+      });
     } else if (fetcher.data?.success) {
-      navigate("/edit/map/", { preventScrollReset: true });
+      // マップの更新
+      //const updateData = fetcher.data.updateData;
+      //const teamName = teams.find((team) => team.id === updateData.team_id)?.name ?? "";
+      //updateMap(updateData, teamName);
+      // 10秒後に遷移
+      //setTimeout(() => {
+        navigate("/edit/map/", { preventScrollReset: true });
+      //}, 10*1000);
     }
   }, [fetcher.data, navigate]);
 
@@ -110,7 +159,7 @@ export default function MapAdd({ loaderData }: Route.ComponentProps) {
           )}
         </fetcher.Form>
       </DialogContent>
-      <Toaster />
+      <Toaster expand={true} richColors />
     </Dialog>
   );
 }

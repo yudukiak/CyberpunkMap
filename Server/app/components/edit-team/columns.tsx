@@ -5,26 +5,36 @@ import { getWebsocketUrl } from "~/lib/websocket-url";
 import { Pencil, MapPinned } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner"
 import { Link } from "react-router";
 
 function resetMapCenter(redTeam: RedTeam) {
   const { id } = redTeam;
-  console.log("送信開始");
   const wsUrl = getWebsocketUrl()
-  console.log("wsUrl", wsUrl);
+  toast.info(`${id}のマップをリセットします`, {
+    description: `${wsUrl}`,
+    duration: 10*1000,
+  });
   const ws = new window.WebSocket(wsUrl);
   ws.onopen = () => {
-    ws.send(
-      JSON.stringify({
-        type: "resetMapCenter",
-        path: `/red/${id}`,
-      })
-    );
+    const message = {
+      type: "resetMapCenter",
+      path: `/red/${id}`,
+    }
+    const messageString = JSON.stringify(message);
+    ws.send(messageString);
     ws.close();
-    console.log("送信完了");
+    toast.success(`${id}のマップをリセットしました`, {
+      description: `${messageString}`,
+      duration: 10*1000,
+    });
   };
-  ws.onerror = () => {
-    alert("WebSocket送信に失敗しました");
+  ws.onerror = (error) => {
+    console.log("WebSocket Error Event", error);
+    toast.error("WebSocket送信に失敗しました", {
+      duration: 10*1000,
+    });
   };
 }
 
@@ -43,6 +53,7 @@ export const columns: ColumnDef<RedTeam>[] = [
           >
             <MapPinned />
           </Button>
+          <Toaster expand={true} richColors />
         </div>
       );
     },
