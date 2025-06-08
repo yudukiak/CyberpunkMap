@@ -252,12 +252,13 @@ export default function RedMap({ pins: pinsRaw, dev }: MapProps) {
     {moveMapCenterData && (
       <Dialog
         data={moveMapCenterData}
+        zoomPoint={mapRef.current?.getZoom() || 6}
         onResult={(result) => {
           setMoveMapCenterData(null);
-          if (result && moveMapCenterData) {
+          if (result.success && moveMapCenterData) {
             mapRef.current?.setView(
               [moveMapCenterData.lat, moveMapCenterData.lng],
-              6
+              result.zoomPoint
             );
           }
         }}

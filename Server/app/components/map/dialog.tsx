@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -7,48 +8,125 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "~/components/ui/alert-dialog";
 import { Button, buttonVariants } from "~/components/ui/button";
-import { Card, CardContent } from "~/components/ui/card";
+import { 
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader
+} from "~/components/ui/card";
 import { ScrollArea, ScrollBar } from "~/components/ui/scroll-area"
-import { MapPinned } from "lucide-react";
+import * as SliderPrimitive from "@radix-ui/react-slider";
+import { MapPinned, ZoomIn, ZoomOut } from "lucide-react";
 import type { MoveMapCenterType } from "types/map";
 
-export default function Dialog({ data, onResult }: { data: MoveMapCenterType, onResult: (result: boolean) => void }) {
+type DialogProps = {
+  data: MoveMapCenterType;
+  zoomPoint: number;
+  onResult: (result: {success: boolean, zoomPoint: number}) => void;
+}
+
+export default function Dialog({ data, zoomPoint, onResult }: DialogProps) {
+  const [zoomCurrentPoint, setZoomCurrentPoint] = useState(zoomPoint);
+
   return (
     <AlertDialog open={true}>
-      <AlertDialogContent>
-        <AlertDialogHeader className="items-center">
-          <AlertDialogTitle>
-            <div className="mb-2 mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-secondary">
-              <MapPinned className="h-7 w-7" />
-            </div>
+      <AlertDialogContent className="p-0 gap-0">
+
+        <AlertDialogHeader className="p-6 border-b">
+          <AlertDialogTitle className="flex items-center gap-4">
+            <MapPinned className="h-6 w-6" />
             マップの移動をする？
           </AlertDialogTitle>
-          <AlertDialogDescription asChild>
-            <Card className="w-full py-2">
-              <ScrollArea className="h-24">
-                <CardContent className="text-center whitespace-pre-line">
-                  {data.content}
-                </CardContent>
-                <ScrollBar orientation="horizontal" />
-              </ScrollArea>
-            </Card>
-          </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter className="mt-2 sm:justify-center">
-          <AlertDialogCancel onClick={() => onResult(false)}>
+
+        <AlertDialogDescription asChild>
+          <div className="w-full text-center p-6">
+            <div className="mb-2">ズーム倍率を変更</div>
+            <SliderWithArrow
+              zoomPoint={zoomCurrentPoint}
+              setZoomPoint={setZoomCurrentPoint}
+            />
+          </div>
+        </AlertDialogDescription>
+        
+        <AlertDialogDescription asChild>
+          <Card className="w-full px-1 py-2 rounded-none border-x-0">
+            <ScrollArea className="h-24">
+              <CardContent className="text-center whitespace-pre-line">
+                {data.content}
+              </CardContent>
+              <ScrollBar orientation="horizontal" />
+            </ScrollArea>
+          </Card>
+        </AlertDialogDescription>
+        
+        <AlertDialogFooter className="sm:justify-center p-6">
+          <AlertDialogCancel
+            className="cursor-pointer"
+            onClick={() => onResult({success: false, zoomPoint: zoomCurrentPoint})}
+          >
             キャンセル
           </AlertDialogCancel>
           <AlertDialogAction
-            className={buttonVariants({ variant: "destructive" })}
-            onClick={() => onResult(true)}
+            className={buttonVariants({ variant: "destructive", className: "cursor-pointer" })}
+            onClick={() => onResult({success: true, zoomPoint: zoomCurrentPoint})}
           >
             移動する
           </AlertDialogAction>
         </AlertDialogFooter>
+
       </AlertDialogContent>
     </AlertDialog>
+  );
+}
+
+type SliderWithArrowProps = {
+  zoomPoint: number;
+  setZoomPoint: (zoomPoint: number) => void;
+}
+
+function SliderWithArrow({ zoomPoint, setZoomPoint }: SliderWithArrowProps) {
+  return (
+    <div className="relative w-full flex justify-center items-center">
+      <Button
+        variant="outline"
+        className="mr-4 cursor-pointer"
+        onClick={() => {
+          // 1未満にはしない
+          if (zoomPoint > 1) setZoomPoint(zoomPoint - 1);
+        }}
+      >
+        <ZoomOut className="h-4 w-4" />
+      </Button>
+      <SliderPrimitive.Root
+        value={[zoomPoint]}
+        min={1}
+        max={6}
+        step={1}
+        onValueChange={(value) => setZoomPoint(value[0])}
+        className="relative flex w-1/2 touch-none select-none items-center"
+      >
+        <SliderPrimitive.Track
+          className="relative h-1.5 w-full grow overflow-hidden rounded-full bg-primary/20"
+        />
+        <SliderPrimitive.Thumb
+          className="block h-6 w-6 rounded-full border border-primary/50 bg-background shadow text-center cursor-move"
+        >
+          {zoomPoint}
+        </SliderPrimitive.Thumb>
+      </SliderPrimitive.Root>
+      <Button
+        variant="outline"
+        className="ml-4 cursor-pointer"
+        onClick={() => {
+          // 6を超えない
+          if (zoomPoint < 6) setZoomPoint(zoomPoint + 1);
+        }}
+      >
+        <ZoomIn className="h-4 w-4" />
+      </Button>
+    </div>
   );
 }

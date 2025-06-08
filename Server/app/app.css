@@ -13,17 +13,26 @@
   .leaflet-map-pane {
     z-index: 0;
   }
+  .leaflet-top,
+  .leaflet-left,
+  .leaflet-bottom,
+  .leaflet-right {
+    z-index: 1;
+  }
+
+  /* ピンの吹き出し */
   .leaflet-popup-content-wrapper {
     border-radius: 0.5rem;
   }
-
+  /* ピンの吹き出し 中身 */
   .leaflet-popup-content {
     margin: 0.5rem 1rem;
   }
-
+  /* ピンの吹き出し 閉じるボタン */
   .leaflet-popup-close-button {
     display: none;
   }
+
 }
 
 @theme inline {
