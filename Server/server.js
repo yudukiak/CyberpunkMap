@@ -7,8 +7,6 @@ import { WebSocketServer } from "ws";
 import fs from "fs";
 import 'dotenv/config';
 
-const isCloudflare = typeof globalThis?.WebSocketPair !== "undefined" || process.env.CF_PAGES || process.env.WORKERS_ENV;
-
 //const __filename = fileURLToPath(import.meta.url);
 //const __dirname = path.dirname(__filename);
 // 各クライアントの「現在のパス」を記憶する Map
@@ -111,56 +109,45 @@ function setupWebSocketServer(server, port) {
   });
 }
 
-if (!isCloudflare) {
-  if (process.env.NODE_ENV === "development") {
-    // WebSocketサーバーのみ起動
-    const port = process.env.VITE_DEV_WS_PORT;
-    const server = createServer();
-    setupWebSocketServer(server, port);
-  } else {
-    // 本番等はExpress+WebSocketサーバーを起動
-    console.log("👀 ビルドファイル存在チェック")
-    const buildPath = "./build/server/index.js";
-    if (!fs.existsSync(buildPath)) {
-      console.error("❌ build/server/index.js が存在しません");
-      process.exit(1);
-    }
-    console.log("💾 React Router のビルドを安全に import");
-    let build;
+if (process.env.NODE_ENV === "development") {
+  // WebSocketサーバーのみ起動
+  const port = process.env.VITE_DEV_WS_PORT;
+  const server = createServer();
+  setupWebSocketServer(server, port);
+} else {
+  // 本番等はExpress+WebSocketサーバーを起動
+  console.log("👀 ビルドファイル存在チェック")
+  const buildPath = "./build/server/index.js";
+  if (!fs.existsSync(buildPath)) {
+    console.error("❌ build/server/index.js が存在しません");
+    process.exit(1);
+  }
+  console.log("💾 React Router のビルドを安全に import");
+  let build;
+  try {
+    build = await import(buildPath);
+  } catch (err) {
+    console.error("❌ build/server/index.js が読み込めません", err);
+    process.exit(1);
+  }
+
+  // ① Express設定
+  const app = express();
+  app.set('trust proxy', true);
+  // ② 静的ファイル
+  app.use(express.static("build/client"));
+  app.use(express.static("public"));
+
+  app.all(/.*/, async (req, res, next) => {
     try {
-      build = await import(buildPath);
+      return createRequestHandler({ build })(req, res, next);
     } catch (err) {
-      console.error("❌ build/server/index.js が読み込めません", err);
-      process.exit(1);
+      console.error("❌ SSRハンドラー内でエラー発生:", err);
+      next(err);
     }
+  });
 
-    // ① Express設定
-    const app = express();
-    app.set('trust proxy', true);
-    // ② 静的ファイル
-    app.use(express.static("build/client"));
-    app.use(express.static("public"));
-
-    app.all(/.*/, async (req, res, next) => {
-      try {
-        return createRequestHandler({ build })(req, res, next);
-      } catch (err) {
-        console.error("❌ SSRハンドラー内でエラー発生:", err);
-        next(err);
-      }
-    });
-
-    const port = process.env.VITE_SERVER_PORT;
-    const server = createServer(app);
-    setupWebSocketServer(server, port);
-  }
+  const port = process.env.VITE_SERVER_PORT;
+  const server = createServer(app);
+  setupWebSocketServer(server, port);
 }
-
-// Cloudflare Workers用fetchハンドラ
-export default {
-  async fetch(request, env, ctx) {
-    // ここにCloudflare Workers用のルーティング/SSR/静的ファイル/WS対応を実装する
-    // まずは最低限のレスポンス
-    return new Response("Hello from Cloudflare Worker!", { status: 200 });
-  }
-};
