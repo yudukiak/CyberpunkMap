@@ -27,7 +27,6 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea"
-import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner"
 import * as v from "valibot";
 
@@ -139,6 +138,7 @@ export default function MapEdit({ loaderData }: Route.ComponentProps) {
   const isLoading = fetcher.state !== "idle";
   useEffect(() => {
     if (fetcher.data?.error) {
+      console.error('error:', fetcher.data?.error)
       toast.error(fetcher.data.error, {
         duration: 10*1000,
       });
@@ -147,10 +147,7 @@ export default function MapEdit({ loaderData }: Route.ComponentProps) {
       const updateData = fetcher.data.updateData;
       const teamName = teams.find((team) => team.id === updateData.team_id)?.name ?? "";
       updateMap(updateData, teamName);
-      // 10秒後に遷移
-      setTimeout(() => {
-        navigate("/edit/map/", { preventScrollReset: true });
-      }, 10*1000);
+      navigate("/edit/map/", { preventScrollReset: true });
     }
   }, [fetcher.data, navigate]);
 
@@ -180,7 +177,6 @@ export default function MapEdit({ loaderData }: Route.ComponentProps) {
           )}
         </fetcher.Form>
       </DialogContent>
-      <Toaster expand={true} richColors />
     </Dialog>
   );
 }

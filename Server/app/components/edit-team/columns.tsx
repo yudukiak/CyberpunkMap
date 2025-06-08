@@ -5,7 +5,6 @@ import { getWebsocketUrl } from "~/lib/websocket-url";
 import { Pencil, MapPinned } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner"
 import { Link } from "react-router";
 
@@ -53,7 +52,6 @@ export const columns: ColumnDef<RedTeam>[] = [
           >
             <MapPinned />
           </Button>
-          <Toaster expand={true} richColors />
         </div>
       );
     },

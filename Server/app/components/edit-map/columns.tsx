@@ -2,17 +2,16 @@ import type { ColumnDef } from "@tanstack/react-table";
 import type { RedMap } from "types/edit";
 import { getColor } from "~/lib/color-library";
 import { getWebsocketUrl } from "~/lib/websocket-url";
-import { Link } from "react-router";
 import { Pencil, Info, MapPinned } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { Toaster } from "@/components/ui/sonner";
-import { toast } from "sonner"
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { toast } from "sonner"
+import { Link } from "react-router";
 
 function moveMapCenter(redMap: RedMap) {
   const { team_id, lat, lng, content } = redMap;

@@ -23,8 +23,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea"
-import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner"
 
 export function meta() {
@@ -55,7 +53,9 @@ export default function TeamAdd({ loaderData }: Route.ComponentProps) {
   useEffect(() => {
     if (fetcher.data?.error) {
       console.error('error:', fetcher.data?.error)
-      toast.error(fetcher.data.error);
+      toast.error(fetcher.data.error, {
+        duration: 10*1000,
+      });
     } else if (fetcher.data?.success) {
       navigate("/edit/team/", { preventScrollReset: true });
     }
@@ -87,7 +87,6 @@ export default function TeamAdd({ loaderData }: Route.ComponentProps) {
           )}
         </fetcher.Form>
       </DialogContent>
-      <Toaster />
     </Dialog>
   );
 }

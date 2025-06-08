@@ -6,6 +6,7 @@ import DataTable from "~/components/edit/data-table";
 import { columns } from "~/components/edit-team/columns";
 import { Link } from "react-router";
 import { Button } from "~/components/ui/button";
+import { Toaster } from "@/components/ui/sonner";
 import { Plus } from "lucide-react";
 
 export function meta() {
@@ -35,6 +36,7 @@ export default function TeamPage({ loaderData }: Route.ComponentProps) {
         </Button>
       </Link>
       <Outlet />
+      <Toaster expand={true} richColors />
     </>
   );
 }
