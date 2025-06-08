@@ -215,6 +215,7 @@ function MapForm({ teams, tags, map }: MapFormProps) {
             id="lat"
             name="lat"
             type="number"
+            step="any"
             defaultValue={lat}
             className="col-span-3"
             required
@@ -229,6 +230,7 @@ function MapForm({ teams, tags, map }: MapFormProps) {
             id="lng"
             name="lng"
             type="number"
+            step="any"
             defaultValue={lng}
             className="col-span-3"
             required
