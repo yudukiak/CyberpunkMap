@@ -17,9 +17,10 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   const { data, error } = await supabase.rpc("get_team_pins", {
     team_ids: ["rulebook", teamId],
   });
-  if (error) return { data: null, error: "データベース接続に失敗しました" };
+  if (error || data == null) return { data: null, error: "データベース接続に失敗しました" };
+  const title = data.find((item: any) => item.team_id === teamId)?.name ?? "";
   const decoratedPins = decoratePins(data);
-  return { data: decoratedPins, title: data[0].name, error: null };
+  return { data: decoratedPins, title, error: null };
 }
 
 export default function Index({ loaderData }: Route.ComponentProps) {
