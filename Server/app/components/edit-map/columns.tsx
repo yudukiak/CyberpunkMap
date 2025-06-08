@@ -39,7 +39,6 @@ function moveMapCenter(redMap: RedMap) {
   };
   ws.onerror = (error) => {
     console.log("WebSocket Error Event", error);
-    const target = error.target as WebSocket;
     toast.error("WebSocket送信に失敗しました", {
       duration: 10*1000,
     });
