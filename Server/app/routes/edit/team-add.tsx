@@ -27,6 +27,13 @@ import { Textarea } from "@/components/ui/textarea"
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner"
 
+export function meta() {
+  const title = ["Add Team", "Cyberpunk RED Map"].filter(Boolean).join(" - ");
+  return [
+    { title },
+  ];
+}
+
 export async function action({ request }: Route.ActionArgs) {
   const { supabase } = createClient(request, "public");
   const formData = await request.formData();

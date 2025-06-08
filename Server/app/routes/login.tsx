@@ -19,6 +19,13 @@ import * as v from "valibot";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 
+export function meta() {
+  const title = ["Login", "Cyberpunk RED Map"].filter(Boolean).join(" - ");
+  return [
+    { title },
+  ];
+}
+
 // valibotスキーマ
 const formSchema = v.object({
   email: v.pipe(v.string(), v.email("メールアドレスの形式で入力してください")),

@@ -26,6 +26,16 @@ import { Switch } from "@/components/ui/switch";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner"
 
+export function meta({ data }: Route.MetaArgs) {
+  const { team } = data;
+  if (team == null) return { title: "Edit Team - Cyberpunk RED Map" };
+  const { name } = team[0];
+  const title = [name, "Cyberpunk RED Map"].filter(Boolean).join(" - ");
+  return [
+    { title },
+  ];
+}
+
 export async function action({ request }: Route.ActionArgs) {
   const { supabase } = createClient(request, "public");
   const formData = await request.formData();

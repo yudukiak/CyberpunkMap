@@ -31,6 +31,17 @@ import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner"
 import * as v from "valibot";
 
+export function meta({ data }: Route.MetaArgs) {
+  const { map } = data;
+  if (map == null) return { title: "Edit Map - Cyberpunk RED Map" };
+  const { content } = map[0];
+  const firstLine = content.split("\n")[0];
+  const title = [firstLine, "Cyberpunk RED Map"].filter(Boolean).join(" - ");
+  return [
+    { title },
+  ];
+}
+
 const formSchema = v.object({
   id: v.number(),
   short_id: v.string(),

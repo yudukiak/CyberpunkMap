@@ -30,6 +30,13 @@ import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner"
 import * as v from "valibot";
 
+export function meta() {
+  const title = ["Add Map", "Cyberpunk RED Map"].filter(Boolean).join(" - ");
+  return [
+    { title },
+  ];
+}
+
 const formSchema = v.object({
   lat: v.number(),
   lng: v.number(),

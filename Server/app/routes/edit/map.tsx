@@ -8,6 +8,13 @@ import { Link } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Plus } from "lucide-react";
 
+export function meta() {
+  const title = ["Map", "Cyberpunk RED Map"].filter(Boolean).join(" - ");
+  return [
+    { title },
+  ];
+}
+
 export async function loader({ request }: Route.LoaderArgs) {
   const { supabase } = createClient(request, "public");
   const { data, error } = await supabase.from("red_map").select("*").order("id", { ascending: true });

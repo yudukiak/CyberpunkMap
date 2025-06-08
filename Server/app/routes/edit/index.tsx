@@ -4,6 +4,13 @@ import { createClient } from "~/lib/supabase";
 import Error from "~/components/error";
 import Map from "~/components/map";
 
+export function meta() {
+  const title = ["Edit", "Cyberpunk RED Map"].filter(Boolean).join(" - ");
+  return [
+    { title },
+  ];
+}
+
 export async function loader({ request }: Route.LoaderArgs) {
   const { supabase } = createClient(request, "public");
   const { data, error } = await supabase.rpc("get_all_team_pins");
