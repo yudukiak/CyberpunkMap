@@ -1,4 +1,4 @@
-import type { PinsLeafletObjectType, PinsLeafletType, MoveMapCenterType } from "types/map";
+import type { PinsLeafletObjectType, PinsLeafletType, MoveMapCenterType } from "~/types/map";
 import {
   MapContainer,
   TileLayer,

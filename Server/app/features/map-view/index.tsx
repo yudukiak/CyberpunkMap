@@ -1,4 +1,4 @@
-import type { PinsLeafletObjectType } from "types/map";
+import type { PinsLeafletObjectType } from "~/types/map";
 import { useState, useEffect } from "react";
 import Loading from "~/components/loading";
 

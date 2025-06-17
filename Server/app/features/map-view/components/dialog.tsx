@@ -17,7 +17,7 @@ import {
 import { ScrollArea, ScrollBar } from "~/components/ui/scroll-area"
 import * as SliderPrimitive from "@radix-ui/react-slider";
 import { MapPinned, ZoomIn, ZoomOut } from "lucide-react";
-import type { MoveMapCenterType } from "types/map";
+import type { MoveMapCenterType } from "~/types/map";
 
 type DialogProps = {
   data: MoveMapCenterType;
