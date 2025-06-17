@@ -1,4 +1,4 @@
-import { isDev, DEV_WS_PORT, SERVER_PORT } from "~/config/vite";
+import { isDev, DEV_WS_PORT, SERVER_PORT } from "~/config/client";
 
 export function getWebsocketUrl() {
   const isHttp = window.location.protocol === "http:";
