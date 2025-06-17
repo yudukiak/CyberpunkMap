@@ -1,5 +1,6 @@
 # ディレクトリ構造（構想）
 
+``` text
 app/
 ├─components/
 │  ├─ui/          # shadcn/ui
@@ -24,3 +25,4 @@ app/
 ├─app.css
 ├─root.tsx
 └─routes.ts
+```
