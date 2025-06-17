@@ -10,7 +10,7 @@ import {
 } from "react-leaflet";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { CRS, Icon, Map as LeafletMap } from "leaflet";
-import { getWebsocketUrl } from "~/lib/websocket-url";
+import { getWebsocketUrl } from "~/utils/websocket-url";
 import Dialog from "./dialog";
 
 function ClipboardMapClick() {

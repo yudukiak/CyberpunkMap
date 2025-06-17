@@ -1,5 +1,5 @@
 import { createClient } from "~/lib/supabase";
-import { decoratePins } from "~/lib/decorate-pins";
+import { decoratePins } from "~/utils/decorate-pins";
 
 type LoaderArgs = {
   request: Request;
