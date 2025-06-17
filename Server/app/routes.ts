@@ -8,7 +8,7 @@ export default [
     route(":teamId", "routes/red/team.tsx"),
   ]),
   route("login", "routes/login.tsx"),
-  //route("signup", "routes/signup.tsx"),
+  route("signup", "routes/signup.tsx"),
   // /edit
   ...prefix("edit", [
     layout("routes/edit/layout.tsx", [

@@ -1,4 +1,5 @@
-import type { PinsRawObjectType, PinsLeafletObjectType } from "types/map";
+import type { TeamPinsType } from "~/features/supabase/types/rpc";
+import type { LeafletPinsType } from "~/types/pins";
 
 const pinColor = {
   blue: "hue-rotate-[0deg]",
@@ -16,7 +17,7 @@ const pinColor = {
   gray: "grayscale",
 };
 
-export function decoratePins(pinsRaw: PinsRawObjectType[]): PinsLeafletObjectType[] {
+export function decoratePins(pinsRaw: TeamPinsType[]): LeafletPinsType[] {
   return pinsRaw.map((pinRaw) => {
     const { team_id, name, pins } = pinRaw;
     const decoratedPins = pins.map((pin) => {

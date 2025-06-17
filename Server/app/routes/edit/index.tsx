@@ -1,22 +1,18 @@
 import type { Route } from "./+types/index";
-import { decoratePins } from "~/lib/decorate-pins";
-import { createClient } from "~/lib/supabase";
 import Error from "~/components/error";
-import Map from "~/components/map";
+import Map from "~/features/map-view";
+import { loadMapData } from "~/features/map-view/map-loader";
 
 export function meta() {
   const title = ["Edit", "Cyberpunk RED Map"].filter(Boolean).join(" - ");
-  return [
-    { title },
-  ];
+  return [{ title }];
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
-  const { supabase } = createClient(request, "public");
-  const { data, error } = await supabase.rpc("get_all_team_pins");
-  if (error) return { data: null, error: "データベース接続に失敗しました" };
-  const decoratedPins = decoratePins(data);
-  return { data: decoratedPins, error: null };
+  return loadMapData({
+    request,
+    rpcName: "get_team_pins",
+  });
 }
 
 export default function Index({ loaderData }: Route.ComponentProps) {

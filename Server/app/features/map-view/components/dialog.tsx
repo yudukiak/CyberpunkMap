@@ -13,8 +13,6 @@ import { Button, buttonVariants } from "~/components/ui/button";
 import { 
   Card,
   CardContent,
-  CardFooter,
-  CardHeader
 } from "~/components/ui/card";
 import { ScrollArea, ScrollBar } from "~/components/ui/scroll-area"
 import * as SliderPrimitive from "@radix-ui/react-slider";

@@ -1,6 +1,6 @@
 import type { Route } from "./+types/team";
 import { Outlet } from "react-router";
-import { createClient } from "~/lib/supabase";
+import { createClient } from "~/features/supabase";
 import Error from "~/components/error";
 import DataTable from "~/components/edit/data-table";
 import { columns } from "~/components/edit-team/columns";

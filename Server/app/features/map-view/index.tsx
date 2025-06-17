@@ -11,7 +11,7 @@ export default function Index({ pins, dev = false }: MapProps) {
   // クライアントでのみ Leaflet を読み込む
   const [Map, setMap] = useState<React.FC<any> | null>(null);
   useEffect(() => {
-    import("./map").then((mod) => setMap(() => mod.default));
+    import("./components/map").then((mod) => setMap(() => mod.default));
   }, []);
   return Map ? <Map pins={pins} dev={dev} /> : <Loading />;
 }

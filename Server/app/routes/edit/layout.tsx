@@ -1,6 +1,6 @@
 import type { Route } from "./+types/layout";
 import { Outlet, useLocation, Link, redirect } from "react-router";
-import { createClient } from "~/lib/supabase";
+import { createClient } from "~/features/supabase";
 import {
   NavigationMenu,
   NavigationMenuItem,

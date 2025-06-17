@@ -3,7 +3,7 @@ import {
   parseCookieHeader,
   serializeCookieHeader,
 } from "@supabase/ssr";
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from "~/config";
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from "~/config/server";
 
 export function createClient(request: Request, schema?: string) {
   const headers = new Headers();
