@@ -1,4 +1,4 @@
-import type { TeamPinsType } from "~/features/supabase/types/rpc";
+import type { TeamPinsType } from "~/lib/supabase/types/rpc";
 import type { LeafletPinsType } from "~/types/pins";
 
 const pinColor = {

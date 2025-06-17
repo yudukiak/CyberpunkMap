@@ -1,8 +1,8 @@
 import type { Route } from "./+types/team-add";
-import type { RedTeam } from "types/edit";
+import type { RedTeam } from "~/types/edit";
 import { useEffect } from "react";
 import { useFetcher, useNavigate } from "react-router";
-import { createClient } from "~/features/supabase";
+import { createClient } from "~/lib/supabase";
 import Error from "~/components/error";
 import Loading from "~/components/loading";
 import { Button } from "@/components/ui/button";

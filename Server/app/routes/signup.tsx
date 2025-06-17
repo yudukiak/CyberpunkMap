@@ -1,7 +1,7 @@
 import type { Route } from "./+types/signup";
 import { redirect } from "react-router";
 
-import { createClient } from "~/features/supabase";
+import { createClient } from "~/lib/supabase";
 import { parseAuthFormData } from "~/features/auth/utils/auth-schema";
 import { checkAuthKey } from "~/features/auth/utils/auth-loader";
 import Auth from "~/features/auth/components/auth";

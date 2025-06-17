@@ -1,6 +1,6 @@
 import type { Route } from "./+types/map";
 import { Outlet } from "react-router";
-import { createClient } from "~/features/supabase";
+import { createClient } from "~/lib/supabase";
 import Error from "~/components/error";
 import DataTable from "~/features/map-edit/data-table";
 import { columns } from "~/features/map-edit/map-columns";

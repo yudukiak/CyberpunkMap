@@ -1,4 +1,4 @@
-import { createClient } from "~/features/supabase";
+import { createClient } from "~/lib/supabase";
 import { decoratePins } from "~/lib/decorate-pins";
 
 type LoaderArgs = {
