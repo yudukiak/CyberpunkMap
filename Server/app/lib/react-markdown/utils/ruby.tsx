@@ -2,8 +2,8 @@ import React from "react";
 
 const RUBY_REGEX = /｜(.+?)《(.+?)》/g;
 const RUBY_CLASSES = {
-  container: "text-sm",
-  ruby: "text-xs text-gray-500",
+  container: "",
+  ruby: "text-[7px] text-gray-500",
 } as const;
 
 /**
