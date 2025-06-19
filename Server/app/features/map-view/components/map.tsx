@@ -1,4 +1,15 @@
 import type { PinsLeafletObjectType, PinsLeafletType, MoveMapCenterType } from "~/types/map";
+import type { LeafletPinsType, PinType } from "~/types/pins";
+
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
+
+
 import {
   MapContainer,
   TileLayer,
@@ -10,6 +21,10 @@ import {
 } from "react-leaflet";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { CRS, Icon, Map as LeafletMap } from "leaflet";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { markdownComponents } from "~/lib/react-markdown/components";
+
 import { getWebsocketUrl } from "~/utils/websocket-url";
 import Dialog from "./dialog";
 
@@ -29,14 +44,14 @@ function ClipboardMapClick() {
 }
 
 type MapProps = {
-  pins: PinsLeafletObjectType[],
+  pins: LeafletPinsType[],
   dev: boolean,
 }
 
 export default function RedMap({ pins: pinsRaw, dev }: MapProps) {
   // ピンの情報
   if (pinsRaw == null) throw { message: "情報の取得に失敗しました" };
-  const [pins, setPins] = useState<PinsLeafletObjectType[]>(pinsRaw);
+  const [pins, setPins] = useState<LeafletPinsType[]>(pinsRaw);
 
   // コンソールログ
   function debugLog(...args: any[]) {
@@ -130,7 +145,7 @@ export default function RedMap({ pins: pinsRaw, dev }: MapProps) {
         }
         // マップの更新
         if (type === "updateMap") {
-          const updateObjects: PinsLeafletObjectType[] = parsed.data || [];
+          const updateObjects: LeafletPinsType[] = parsed.data || [];
           debugLog("📦 updateMap 送信されたデータ", updateObjects.concat());
           debugLog("📦 updateMap 保存済みデータ", pins.concat());
           // 送信されたデータを1つずつ処理
@@ -147,7 +162,7 @@ export default function RedMap({ pins: pinsRaw, dev }: MapProps) {
             else {
               const prevPins = prevObject.pins;
               // short_id と pins のマップを作成
-              const pinMap = new Map<string, PinsLeafletType>();
+              const pinMap = new Map<string, PinType>();
               prevPins.forEach((pin) => {
                 pinMap.set(pin.short_id, pin);
               });
@@ -192,7 +207,7 @@ export default function RedMap({ pins: pinsRaw, dev }: MapProps) {
 
   const LayersControlList = pins.map(({ name, pins }, index) => {
     const pinsList = pins.map(
-      ({ lat, lng, content, className, zIndexOffset }, i) => {
+      ({ lat, lng, title, description, className, zIndexOffset }, i) => {
         const icon = new Icon({
           iconUrl: "/map/marker-icon.png",
           iconSize: [25, 41],
@@ -207,8 +222,33 @@ export default function RedMap({ pins: pinsRaw, dev }: MapProps) {
             icon={icon}
             zIndexOffset={zIndexOffset || 0}
           >
-            {content && (
-              <Popup className="whitespace-pre-line">{content}</Popup>
+            {title && (
+              <Popup>
+                <div className="space-y-2">
+                  <div className="text-center font-bold">{title}</div>
+                  {description && 
+                  <ScrollArea
+                    className="
+                      rounded-md bg-neutral-100
+                      p-2 pr-8 pl-4
+                      [&_[data-slot=scroll-area-viewport]]:max-h-32
+                      [&_[data-slot=scroll-area-viewport]]:rounded-none
+                      [&_[data-slot=scroll-area-thumb]]:bg-red-700
+                    "
+                    scrollHideDelay={1000*60*60}
+                  >
+                    {
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        components={markdownComponents()}
+                      >
+                        {description}
+                      </ReactMarkdown>
+                    }
+                  </ScrollArea>
+                  }
+                </div>
+              </Popup>
             )}
           </Marker>
         );

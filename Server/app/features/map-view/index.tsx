@@ -1,9 +1,10 @@
-import type { PinsLeafletObjectType } from "~/types/map";
+//import type { PinsLeafletObjectType } from "~/types/map";
+import type { LeafletPinsType } from "~/types/pins";
 import { useState, useEffect } from "react";
 import Loading from "~/components/loading";
 
 type MapProps = {
-  pins: PinsLeafletObjectType[],
+  pins: LeafletPinsType[],
   dev?: boolean,
 }
 

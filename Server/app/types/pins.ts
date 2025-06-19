@@ -3,6 +3,8 @@ export type PinType = {
   lat: number;
   lng: number;
   content: string;
+  title: string | null;
+  description: string | null;
   tag_id: string;
   is_public: boolean;
   className: string;

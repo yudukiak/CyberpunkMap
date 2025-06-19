@@ -5,6 +5,8 @@ export type PinType = {
   content: string;
   tag_id: string;
   is_public: boolean;
+  title: string | null;
+  description: string | null;
 }
 
 export type TeamPinsType = {
