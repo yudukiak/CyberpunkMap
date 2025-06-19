@@ -23,6 +23,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { CRS, Icon, Map as LeafletMap } from "leaflet";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import remarkBreaks from "remark-breaks";
 import { markdownComponents } from "~/lib/react-markdown/components";
 
 import { getWebsocketUrl } from "~/utils/websocket-url";
@@ -231,7 +232,7 @@ export default function RedMap({ pins: pinsRaw, dev }: MapProps) {
                     className="
                       rounded-md bg-neutral-100
                       p-2 pr-8 pl-4
-                      [&_[data-slot=scroll-area-viewport]]:max-h-32
+                      [&_[data-slot=scroll-area-viewport]]:max-h-48
                       [&_[data-slot=scroll-area-viewport]]:rounded-none
                       [&_[data-slot=scroll-area-thumb]]:bg-red-700
                     "
@@ -239,7 +240,7 @@ export default function RedMap({ pins: pinsRaw, dev }: MapProps) {
                   >
                     {
                       <ReactMarkdown
-                        remarkPlugins={[remarkGfm]}
+                        remarkPlugins={[remarkGfm, remarkBreaks]}
                         components={markdownComponents()}
                       >
                         {description}

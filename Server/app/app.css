@@ -27,9 +27,6 @@
   /* ピンの吹き出し 中身 */
   .leaflet-popup-content {
     margin: 0.5rem 1rem;
-    p {
-      margin: 0 0 0.5rem 0;
-    }
   }
   /* ピンの吹き出し 閉じるボタン */
   .leaflet-popup-close-button {
