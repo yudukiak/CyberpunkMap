@@ -10,6 +10,8 @@ export type RedMap = {
   short_id: string;
   title: string | null;
   description: string | null;
+  reference_title: string | null;
+  reference_url: string | null;
 }
 
 export type RedTag = {

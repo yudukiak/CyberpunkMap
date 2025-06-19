@@ -47,27 +47,33 @@ const formSchema = v.object({
   lat: v.number(),
   lng: v.number(),
   content: v.string(),
-  title: v.string(),
-  description: v.string(),
+  title: v.nullable(v.string()),
+  description: v.nullable(v.string()),
   is_public: v.boolean(),
   team_id: v.string(),
   tag_id: v.string(),
+  reference_title: v.nullable(v.string()),
+  reference_url: v.nullable(v.string()),
 });
 
 export async function action({ request }: Route.ActionArgs) {
   const { supabase } = createClient(request, "public");
   const formData = await request.formData();
+  const toNullableString = (value: FormDataEntryValue | null): string | null =>
+    value === null || value === "" ? null : String(value);
   const formFields = {
     id: Number(formData.get("id") ?? 0),
     short_id: String(formData.get("short_id") ?? ""),
     lat: Number(formData.get("lat") ?? 0),
     lng: Number(formData.get("lng") ?? 0),
     content: String(formData.get("content") ?? ""),
-    title: String(formData.get("title") ?? ""),
-    description: String(formData.get("description") ?? ""),
+    title: toNullableString(formData.get("title")),
+    description: toNullableString(formData.get("description")),
     is_public: formData.get("is_public") === "on",
     team_id: String(formData.get("team_id") ?? ""),
     tag_id: String(formData.get("tag_id") ?? ""),
+    reference_title: toNullableString(formData.get("reference_title")),
+    reference_url: toNullableString(formData.get("reference_url")),
   };
   const result = v.safeParse(formSchema, formFields);
   if (!result.success) {
@@ -192,7 +198,7 @@ type MapFormProps = {
 }
 
 function MapForm({ teams, tags, map }: MapFormProps) {
-  const { id, short_id, lat, lng, content, is_public, team_id, tag_id, title, description } = map;
+  const { id, short_id, lat, lng, content, is_public, team_id, tag_id, title, description, reference_title, reference_url } = map;
   return (
     <>
       <div className="grid gap-4 py-4">
@@ -263,7 +269,30 @@ function MapForm({ teams, tags, map }: MapFormProps) {
             name="description"
             defaultValue={description ?? undefined}
             className="col-span-3 max-h-48"
-            required
+          />
+        </div>
+
+        <div className="min-h-9 grid grid-cols-4 items-center gap-4">
+          <Label htmlFor="reference_title" className="text-right">
+            参考場所
+          </Label>
+          <Input
+            id="reference_title"
+            name="reference_title"
+            defaultValue={reference_title ?? undefined}
+            className="col-span-3"
+          />
+        </div>
+
+        <div className="min-h-9 grid grid-cols-4 items-center gap-4">
+          <Label htmlFor="reference_url" className="text-right">
+            参考URL
+          </Label>
+          <Input
+            id="reference_url"
+            name="reference_url"
+            defaultValue={reference_url ?? undefined}
+            className="col-span-3"
           />
         </div>
 
