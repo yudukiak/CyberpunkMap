@@ -21,21 +21,20 @@ export function decoratePins(pinsRaw: TeamPinsType[]): LeafletPinsType[] {
   return pinsRaw.map((pinRaw) => {
     const { team_id, name, pins } = pinRaw;
     const decoratedPins = pins.map((pin) => {
-      const { short_id, lat, lng, content, tag_id, is_public, title, description } = pin;
       let className = pinColor.gray;
       let zIndexOffset = 0;
-      if (tag_id === "location") {
+      if (pin.tag_id === "location") {
         className = pinColor.blue;
         zIndexOffset = 10000;
       }
-      if (tag_id === "event") {
+      if (pin.tag_id === "event") {
         className = pinColor.red;
         zIndexOffset = 10000;
       }
-      if (is_public === false) {
+      if (pin.is_public === false) {
         className += " brightness-50";
       }
-      return { short_id, lat, lng, content, title, description, tag_id, is_public, className, zIndexOffset };
+      return { ...pin, className, zIndexOffset };
     });
     return { team_id, name, pins: decoratedPins };
   });

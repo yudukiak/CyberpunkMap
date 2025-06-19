@@ -208,26 +208,26 @@ export default function RedMap({ pins: pinsRaw, dev }: MapProps) {
 
   const LayersControlList = pins.map(({ name, pins }, index) => {
     const pinsList = pins.map(
-      ({ lat, lng, title, description, className, zIndexOffset }, i) => {
+      (pin) => {
         const icon = new Icon({
           iconUrl: "/map/marker-icon.png",
           iconSize: [25, 41],
           iconAnchor: [12, 41],
           popupAnchor: [1, -34],
-          className: `${className}`,
+          className: `${pin.className}`,
         });
         return (
           <Marker
-            key={`${lat},${lng}-${i}`}
-            position={[lat, lng]}
+            key={pin.short_id}
+            position={[pin.lat, pin.lng]}
             icon={icon}
-            zIndexOffset={zIndexOffset || 0}
+            zIndexOffset={pin.zIndexOffset || 0}
           >
-            {title && (
+            {pin.title && (
               <Popup>
                 <div className="space-y-2">
-                  <div className="text-center font-bold">{title}</div>
-                  {description && 
+                  <div className="text-center font-bold py-2">{pin.title}</div>
+                  {pin.description && 
                   <ScrollArea
                     className="
                       rounded-md bg-neutral-100
@@ -236,18 +236,28 @@ export default function RedMap({ pins: pinsRaw, dev }: MapProps) {
                       [&_[data-slot=scroll-area-viewport]]:rounded-none
                       [&_[data-slot=scroll-area-thumb]]:bg-red-700
                     "
-                    scrollHideDelay={1000*60*60}
+                    type="always"
                   >
-                    {
-                      <ReactMarkdown
-                        remarkPlugins={[remarkGfm, remarkBreaks]}
-                        components={markdownComponents()}
-                      >
-                        {description}
-                      </ReactMarkdown>
-                    }
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm, remarkBreaks]}
+                    components={markdownComponents()}
+                  >
+                    {pin.description}
+                  </ReactMarkdown>
                   </ScrollArea>
                   }
+                  {pin.reference_title && pin.reference_url && (
+                    <div className="text-right">
+                      <a
+                        className="text-xm !text-red-500"
+                        href={pin.reference_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {pin.reference_title}
+                      </a>
+                    </div>
+                  )}
                 </div>
               </Popup>
             )}

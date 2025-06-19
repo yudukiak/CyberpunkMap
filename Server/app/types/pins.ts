@@ -3,10 +3,12 @@ export type PinType = {
   lat: number;
   lng: number;
   content: string;
-  title: string | null;
-  description: string | null;
   tag_id: string;
   is_public: boolean;
+  title: string | null;
+  description: string | null;
+  reference_title: string | null;
+  reference_url: string | null;
   className: string;
   zIndexOffset: number;
 };

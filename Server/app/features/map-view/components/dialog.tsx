@@ -70,7 +70,7 @@ export default function Dialog({ data, zoomPoint, onResult }: DialogProps) {
                 [&_[data-slot=scroll-area-viewport]]:rounded-none
                 [&_[data-slot=scroll-area-thumb]]:bg-red-800
               "
-              scrollHideDelay={1000*60*60}
+              type="always"
             >
               <CardContent>
                 <ReactMarkdown

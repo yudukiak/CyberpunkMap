@@ -7,6 +7,8 @@ export type PinType = {
   is_public: boolean;
   title: string | null;
   description: string | null;
+  reference_title: string | null;
+  reference_url: string | null;
 }
 
 export type TeamPinsType = {
