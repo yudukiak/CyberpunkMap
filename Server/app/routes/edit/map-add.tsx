@@ -1,5 +1,5 @@
 import type { Route } from "./+types/map-add";
-import type { RedMap, RedTeam, RedTag } from "~/types/edit";
+import type { RedMap, RedTeam, RedTag } from "~/lib/supabase/types/red";
 import { useEffect } from "react";
 import { useFetcher, useNavigate } from "react-router";
 import { decoratePins } from "~/utils/decorate-pins";

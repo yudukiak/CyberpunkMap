@@ -1,5 +1,5 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import type { RedTag } from "~/types/edit";
+import type { RedTag } from "~/lib/supabase/types/red";
 import { getColor } from "~/utils/color-library";
 import { Pencil } from "lucide-react";
 import { Badge } from "@/components/ui/badge";

@@ -1,5 +1,5 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import type { RedMap } from "~/types/edit";
+import type { RedMap } from "~/lib/supabase/types/red";
 import { getColor } from "~/utils/color-library";
 import { getWebsocketUrl } from "~/utils/websocket-url";
 import { Pencil, Info, MapPinned } from "lucide-react";
@@ -89,18 +89,13 @@ export const columns: ColumnDef<RedMap>[] = [
   {
     accessorKey: "title",
     header: "タイトル",
-    cell: ({ row }) => {
-      const content = row.original.content;
-      const contentArray = content.split("\n");
-      const contentHeader = contentArray[0];
-      return <p>{contentHeader}</p>;
-    },
   },
   {
-    accessorKey: "content",
+    accessorKey: "description",
     header: () => <div className="text-center">内容</div>,
     cell: ({ row }) => {
-      const content = row.original.content;
+      const description = row.original.description;
+      if (description == null) return "";
       return (
         <div className="flex justify-center">
           <Tooltip>
@@ -108,7 +103,7 @@ export const columns: ColumnDef<RedMap>[] = [
               <Info />
             </TooltipTrigger>
             <TooltipContent>
-              <p className="whitespace-pre-wrap">{content}</p>
+              <p className="whitespace-pre-wrap">{description}</p>
             </TooltipContent>
           </Tooltip>          
         </div>

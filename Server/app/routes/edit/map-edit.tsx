@@ -1,5 +1,5 @@
 import type { Route } from "./+types/map-edit";
-import type { RedTeam, RedMap, RedTag } from "~/types/edit";
+import type { RedTeam, RedMap, RedTag } from "~/lib/supabase/types/red";
 import { useEffect } from "react";
 import { useFetcher, useNavigate, redirect } from "react-router";
 import { decoratePins } from "~/utils/decorate-pins";
@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { toast } from "sonner"
 import * as v from "valibot";
 
@@ -46,6 +47,8 @@ const formSchema = v.object({
   lat: v.number(),
   lng: v.number(),
   content: v.string(),
+  title: v.string(),
+  description: v.string(),
   is_public: v.boolean(),
   team_id: v.string(),
   tag_id: v.string(),
@@ -60,6 +63,8 @@ export async function action({ request }: Route.ActionArgs) {
     lat: Number(formData.get("lat") ?? 0),
     lng: Number(formData.get("lng") ?? 0),
     content: String(formData.get("content") ?? ""),
+    title: String(formData.get("title") ?? ""),
+    description: String(formData.get("description") ?? ""),
     is_public: formData.get("is_public") === "on",
     team_id: String(formData.get("team_id") ?? ""),
     tag_id: String(formData.get("tag_id") ?? ""),
@@ -187,7 +192,7 @@ type MapFormProps = {
 }
 
 function MapForm({ teams, tags, map }: MapFormProps) {
-  const { id, short_id, lat, lng, content, is_public, team_id, tag_id } = map;
+  const { id, short_id, lat, lng, content, is_public, team_id, tag_id, title, description } = map;
   return (
     <>
       <div className="grid gap-4 py-4">
@@ -237,14 +242,27 @@ function MapForm({ teams, tags, map }: MapFormProps) {
         </div>
 
         <div className="min-h-9 grid grid-cols-4 items-center gap-4">
-          <Label htmlFor="content" className="text-right">
-            内容
+          <Label htmlFor="title" className="text-right">
+            タイトル
+          </Label>
+          <Input
+            id="title"
+            name="title"
+            defaultValue={title ?? undefined}
+            className="col-span-3"
+            required
+          />
+        </div>
+
+        <div className="min-h-9 grid grid-cols-4 items-center gap-4">
+          <Label htmlFor="description" className="text-right">
+            説明
           </Label>
           <Textarea
-            id="content"
-            name="content"
-            defaultValue={content}
-            className="col-span-3"
+            id="description"
+            name="description"
+            defaultValue={description ?? undefined}
+            className="col-span-3 max-h-48"
             required
           />
         </div>

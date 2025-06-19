@@ -1,5 +1,5 @@
 import type { Route } from "./+types/team-edit";
-import type { RedTeam } from "~/types/edit";
+import type { RedTeam } from "~/lib/supabase/types/red";
 import { useEffect } from "react";
 import { useFetcher, useNavigate, redirect } from "react-router";
 import { createClient } from "~/lib/supabase";

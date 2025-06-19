@@ -1,5 +1,5 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import type { RedTeam } from "~/types/edit";
+import type { RedTeam } from "~/lib/supabase/types/red";
 import { getColor } from "~/utils/color-library";
 import { getWebsocketUrl } from "~/utils/websocket-url";
 import { Pencil, MapPinned } from "lucide-react";
