@@ -14,7 +14,7 @@ import { toast } from "sonner"
 import { Link } from "react-router";
 
 function moveMapCenter(redMap: RedMap) {
-  const { team_id, lat, lng, content } = redMap;
+  const { team_id, lat, lng, title, description } = redMap;
   const wsUrl = getWebsocketUrl()
   toast.info(`${team_id}のマップを移動します`, {
     description: `${wsUrl}`,
@@ -25,7 +25,7 @@ function moveMapCenter(redMap: RedMap) {
     const message = {
       type: "moveMapCenter",
       path: `/red/${team_id}`,
-      data: { lat, lng, content },
+      data: { lat, lng, title, description },
       date: new Date().toISOString(),
     }
     const messageString = JSON.stringify(message);

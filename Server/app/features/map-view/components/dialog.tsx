@@ -13,11 +13,18 @@ import { Button, buttonVariants } from "~/components/ui/button";
 import { 
   Card,
   CardContent,
+  CardHeader,
+  CardTitle,
 } from "~/components/ui/card";
 import { ScrollArea, ScrollBar } from "~/components/ui/scroll-area"
 import * as SliderPrimitive from "@radix-ui/react-slider";
 import { MapPinned, ZoomIn, ZoomOut } from "lucide-react";
 import type { MoveMapCenterType } from "~/types/map";
+
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import remarkBreaks from "remark-breaks";
+import { markdownComponents } from "~/lib/react-markdown/components";
 
 type DialogProps = {
   data: MoveMapCenterType;
@@ -50,10 +57,28 @@ export default function Dialog({ data, zoomPoint, onResult }: DialogProps) {
         </AlertDialogDescription>
         
         <AlertDialogDescription asChild>
-          <Card className="w-full px-1 py-2 rounded-none border-x-0">
-            <ScrollArea className="h-24">
-              <CardContent className="text-center whitespace-pre-line">
-                {data.content}
+          <Card className="mx-6 p-0 gap-0">
+            <CardHeader className="py-4 gap-0">
+              <CardTitle>
+                {data.title}
+              </CardTitle>
+            </CardHeader>
+            <ScrollArea
+              className="
+                p-2 pr-8 pl-4 border-t
+                [&_[data-slot=scroll-area-viewport]]:max-h-48
+                [&_[data-slot=scroll-area-viewport]]:rounded-none
+                [&_[data-slot=scroll-area-thumb]]:bg-red-800
+              "
+              scrollHideDelay={1000*60*60}
+            >
+              <CardContent>
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm, remarkBreaks]}
+                  components={markdownComponents()}
+                >
+                  {data.description}
+                </ReactMarkdown>
               </CardContent>
               <ScrollBar orientation="horizontal" />
             </ScrollArea>

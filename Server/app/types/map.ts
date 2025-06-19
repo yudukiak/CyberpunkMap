@@ -33,6 +33,7 @@ export type PinsLeafletObjectType = {
 export type MoveMapCenterType = {
   lat: number;
   lng: number;
-  content: string;
+  title: string;
+  description: string | null;
   date: string;
 }
