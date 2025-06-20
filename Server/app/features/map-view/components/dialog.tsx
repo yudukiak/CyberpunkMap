@@ -21,10 +21,7 @@ import * as SliderPrimitive from "@radix-ui/react-slider";
 import { MapPinned, ZoomIn, ZoomOut } from "lucide-react";
 import type { MoveMapCenterType } from "~/types/map";
 
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import remarkBreaks from "remark-breaks";
-import { markdownComponents } from "~/lib/react-markdown/components";
+import Markdown from "~/components/markdown";
 
 type DialogProps = {
   data: MoveMapCenterType;
@@ -73,12 +70,7 @@ export default function Dialog({ data, zoomPoint, onResult }: DialogProps) {
               type="always"
             >
               <CardContent>
-                <ReactMarkdown
-                  remarkPlugins={[remarkGfm, remarkBreaks]}
-                  components={markdownComponents()}
-                >
-                  {data.description}
-                </ReactMarkdown>
+                <Markdown markdown={data.description ?? ""} />
               </CardContent>
               <ScrollBar orientation="horizontal" />
             </ScrollArea>

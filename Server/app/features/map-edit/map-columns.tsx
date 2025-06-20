@@ -5,6 +5,7 @@ import { getWebsocketUrl } from "~/utils/websocket-url";
 import { Pencil, Info, MapPinned } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Tooltip,
   TooltipContent,
@@ -12,6 +13,7 @@ import {
 } from "@/components/ui/tooltip";
 import { toast } from "sonner"
 import { Link } from "react-router";
+import Markdown from "~/components/markdown";
 
 function moveMapCenter(redMap: RedMap) {
   const { team_id, lat, lng, title, description } = redMap;
@@ -103,7 +105,17 @@ export const columns: ColumnDef<RedMap>[] = [
               <Info />
             </TooltipTrigger>
             <TooltipContent>
-              <p className="whitespace-pre-wrap">{description}</p>
+              <ScrollArea
+                className="
+                  p-2 pr-8 pl-4
+                  [&_[data-slot=scroll-area-viewport]]:max-h-48
+                  [&_[data-slot=scroll-area-viewport]]:rounded-none
+                  [&_[data-slot=scroll-area-thumb]]:bg-red-700
+                "
+                type="always"
+              >
+                <Markdown markdown={description} />
+              </ScrollArea>
             </TooltipContent>
           </Tooltip>          
         </div>

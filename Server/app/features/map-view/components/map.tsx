@@ -21,11 +21,8 @@ import {
 } from "react-leaflet";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { CRS, Icon, Map as LeafletMap } from "leaflet";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import remarkBreaks from "remark-breaks";
-import { markdownComponents } from "~/lib/react-markdown/components";
 
+import Markdown from "~/components/markdown";
 import { getWebsocketUrl } from "~/utils/websocket-url";
 import Dialog from "./dialog";
 
@@ -238,12 +235,7 @@ export default function RedMap({ pins: pinsRaw, dev }: MapProps) {
                     "
                     type="always"
                   >
-                  <ReactMarkdown
-                    remarkPlugins={[remarkGfm, remarkBreaks]}
-                    components={markdownComponents()}
-                  >
-                    {pin.description}
-                  </ReactMarkdown>
+                    <Markdown markdown={pin.description} />
                   </ScrollArea>
                   }
                   {pin.reference_title && pin.reference_url && (

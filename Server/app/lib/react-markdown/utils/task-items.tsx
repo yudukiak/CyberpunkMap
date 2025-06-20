@@ -1,20 +1,30 @@
 import { type ReactNode } from "react";
-import { CheckedIcon, UncheckedIcon } from "./icon";
-import { processText } from "./text";
+import { CheckCircle, Circle } from "lucide-react";
 
-const TASK_REGEX = /(\([x ]\))/;
+const iconClasses = {
+  checked: "text-green-600 w-3 h-3 inline mr-1 align-middle",
+  unchecked: "text-gray-400 w-3 h-3 inline mr-1 align-middle",
+} as const;
 
-/**
- * タスク記法（( ) / (x)）をアイコンに変換
- * @param text - 変換対象のテキスト
- * @returns 変換結果とタスクの有無
- */
-export function processTaskItems(text: string): { children: ReactNode[]; hasTask: boolean } {
+// ✅ チェック済み
+function CheckedIcon(): React.JSX.Element {
+  return <CheckCircle className={iconClasses.checked} />;
+}
+
+// ⬜ 未チェック
+function UncheckedIcon(): React.JSX.Element {
+  return <Circle className={iconClasses.unchecked} />;
+}
+
+export function processTaskItems(text: string): {
+  children: ReactNode[];
+  hasTask: boolean;
+} {
   const children: ReactNode[] = [];
   let hasTask = false;
 
-  const parts = text.split(TASK_REGEX);
-  
+  const parts = text.split(/(\([x ]\))/);
+
   parts.forEach((part) => {
     switch (part) {
       case "( )":
@@ -27,7 +37,7 @@ export function processTaskItems(text: string): { children: ReactNode[]; hasTask
         break;
       default:
         if (part) {
-          children.push(...processText(part));
+          children.push(part);
         }
         break;
     }
