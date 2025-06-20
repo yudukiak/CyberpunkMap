@@ -15,7 +15,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-import type { RedTeam, RedMap, RedTag } from "~/types/edit";
+import type { RedTeam, RedMap, RedTag } from "~/lib/supabase/types/red";
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
