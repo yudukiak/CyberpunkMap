@@ -4,15 +4,16 @@ import { useState, useEffect } from "react";
 import Loading from "~/components/loading";
 
 type MapProps = {
-  pins: LeafletPinsType[],
+  system: "red" |"edge";
+  pins?: LeafletPinsType[],
   dev?: boolean,
 }
 
-export default function Index({ pins, dev = false }: MapProps) {
+export default function Index({ system, pins, dev = false }: MapProps) {
   // クライアントでのみ Leaflet を読み込む
   const [Map, setMap] = useState<React.FC<any> | null>(null);
   useEffect(() => {
     import("./components/map").then((mod) => setMap(() => mod.default));
   }, []);
-  return Map ? <Map pins={pins} dev={dev} /> : <Loading />;
+  return Map ? <Map system={system} pins={pins} dev={dev} /> : <Loading />;
 }

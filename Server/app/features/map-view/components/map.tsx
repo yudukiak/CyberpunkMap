@@ -42,14 +42,15 @@ function ClipboardMapClick() {
 }
 
 type MapProps = {
+  system: "red" |"edge";
   pins: LeafletPinsType[],
   dev: boolean,
 }
 
-export default function RedMap({ pins: pinsRaw, dev }: MapProps) {
+export default function RedMap({ system, pins: pinsRaw, dev }: MapProps) {
   // ピンの情報
-  if (pinsRaw == null) throw { message: "情報の取得に失敗しました" };
-  const [pins, setPins] = useState<LeafletPinsType[]>(pinsRaw);
+  //if (pinsRaw == null) throw { message: "情報の取得に失敗しました" };
+  const [pins, setPins] = useState<LeafletPinsType[] | []>(pinsRaw || []);
 
   // コンソールログ
   function debugLog(...args: any[]) {
@@ -264,6 +265,10 @@ export default function RedMap({ pins: pinsRaw, dev }: MapProps) {
     );
   });
 
+  const directory = system === "edge" ? "CyberpunkEdgerunners" : "CyberpunkRed";
+  const attribution = system === "edge" ? undefined : '<a href="https://rtalsoriangames.com/2025/01/15/cyberpunk-red-alert-january-2025-dlc-night-city-atlas/" target="_blank">R. Talsorian Games</a>';
+  const mapBackground = system === "edge" ? "#3c3a3b" : "#1e1e29";
+
   return (
     <>
     <MapContainer
@@ -275,22 +280,22 @@ export default function RedMap({ pins: pinsRaw, dev }: MapProps) {
       scrollWheelZoom={true}
       crs={CRS.Simple}
       className="h-full w-full"
-      style={{ background: "#1e1e29" }}
+      style={{ background: mapBackground }}
       id="map"
       whenReady={handleMapReady}
     >
       <TileLayer
-        url="/map/CyberpunkRed/tiles/{z}/{x}/{y}.png"
+        url={`/map/${directory}/tiles/{z}/{x}/{y}.png`}
         tileSize={256}
         noWrap={true}
         bounds={[
           [-256, 256],
           [0, 0],
         ]}
-        attribution='<a href="https://rtalsoriangames.com/2025/01/15/cyberpunk-red-alert-january-2025-dlc-night-city-atlas/" target="_blank">R. Talsorian Games</a>'
+        attribution={attribution}
       />
       {dev && <ClipboardMapClick />}
-      <LayersControl>{LayersControlList}</LayersControl>
+      {pinsRaw && <LayersControl>{LayersControlList}</LayersControl> }
     </MapContainer>
     {moveMapCenterData && (
       <Dialog

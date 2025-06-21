@@ -20,7 +20,7 @@ export default function Index({ loaderData }: Route.ComponentProps) {
   if (error || data == null) return <ErrorBoundary />;
   return (
     <main className="h-dvh w-dvw">
-      <Map pins={data} />
+      <Map system="red" pins={data} />
     </main>
   );
 }

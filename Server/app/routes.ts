@@ -7,6 +7,9 @@ export default [
     index("routes/red/index.tsx"),
     route(":teamId", "routes/red/team.tsx"),
   ]),
+  ...prefix("edge", [
+    index("routes/edge/index.tsx"),
+  ]),
   route("login", "routes/login.tsx"),
   route("signup", "routes/signup.tsx"),
   // /edit
