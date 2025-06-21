@@ -28,6 +28,9 @@ function setupWebSocketServer(server, port) {
         const json = JSON.parse(messageString);
         // 👣 クライアントから初回に「ルート通知」された場合
         if (json.type === "initRoute" && typeof json.route === "string") {
+          // 特定のパスは処理しない
+          if (json.route === "/red") return;
+          if (json.route === "/edge") return;
           // clientRoutesに ws: /red/miscrunners を保存
           clientRoutes.set(ws, json.route);
           // moveMapCenterDataが空の時 かつ pathが /red/ でない時 のみ /red/miscrunners: "" を保存
