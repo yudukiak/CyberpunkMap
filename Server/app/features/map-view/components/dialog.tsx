@@ -60,20 +60,24 @@ export default function Dialog({ data, zoomPoint, onResult }: DialogProps) {
                 {data.title}
               </CardTitle>
             </CardHeader>
-            <ScrollArea
-              className="
-                p-2 pr-8 pl-4 border-t
-                [&_[data-slot=scroll-area-viewport]]:max-h-48
-                [&_[data-slot=scroll-area-viewport]]:rounded-none
-                [&_[data-slot=scroll-area-thumb]]:bg-red-800
-              "
-              type="always"
-            >
-              <CardContent>
-                <Markdown markdown={data.description ?? ""} />
-              </CardContent>
-              <ScrollBar orientation="horizontal" />
-            </ScrollArea>
+            {
+              data.description && (
+                <ScrollArea
+                  className="
+                    p-2 pr-8 pl-4 border-t
+                    [&_[data-slot=scroll-area-viewport]]:max-h-48
+                    [&_[data-slot=scroll-area-viewport]]:rounded-none
+                    [&_[data-slot=scroll-area-thumb]]:bg-red-800
+                  "
+                  type="always"
+                >
+                  <CardContent>
+                    <Markdown markdown={data.description} />
+                  </CardContent>
+                  <ScrollBar orientation="horizontal" />
+                </ScrollArea>
+              )
+            }
           </Card>
         </AlertDialogDescription>
         
