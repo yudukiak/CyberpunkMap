@@ -113,7 +113,7 @@ function TeamForm({ team }: TeamFormProps) {
       <div className="grid gap-4 py-4">
 
         <div className="h-9 grid grid-cols-4 items-center gap-4">
-          <Label htmlFor="name" className="text-right">
+          <Label htmlFor="is_public" className="text-right">
             公開設定
           </Label>
           <Switch
