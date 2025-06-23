@@ -8,7 +8,8 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
-
+import { MapPin } from "lucide-react";
+import { renderToStaticMarkup } from "react-dom/server";
 
 import {
   MapContainer,
@@ -20,11 +21,141 @@ import {
   LayerGroup,
 } from "react-leaflet";
 import { useEffect, useRef, useState, useCallback } from "react";
-import { CRS, Icon, Map as LeafletMap } from "leaflet";
+import { CRS, Icon, Map as LeafletMap, DivIcon } from "leaflet";
 
 import Markdown from "~/components/markdown";
 import { getWebsocketUrl } from "~/utils/websocket-url";
 import Dialog from "./dialog";
+
+// ズームレベルに応じてピンのサイズを管理するコンポーネント
+function ZoomAwarePins({ pins, dev }: { pins: LeafletPinsType[], dev: boolean }) {
+  const [currentZoom, setCurrentZoom] = useState(3);
+  const markerRefs = useRef<Map<string, any>>(new Map());
+  const pinDataRefs = useRef<Map<string, PinType>>(new Map());
+  
+  useMapEvents({
+    zoomend: (e) => {
+      const zoom = e.target.getZoom();
+      setCurrentZoom(zoom);
+      if (dev) console.log('🔍 ズームレベル変更:', zoom);
+      
+      // ズーム変更時に既存のマーカーのアイコンサイズを更新
+      markerRefs.current.forEach((markerRef, key) => {
+        if (markerRef && markerRef.leafletElement) {
+          const pinData = pinDataRefs.current.get(key);
+          if (pinData) {
+            const newSize = getPinSize(zoom);
+            const newIcon = new DivIcon({
+              html: renderToStaticMarkup(
+                <MapPin
+                  strokeWidth={1}
+                  style={{ width: `${newSize}px`, height: `${newSize}px` }}
+                  className="[&>path]:fill-blue-500 [&>circle]:fill-white"
+                />
+              ),
+              iconSize: [newSize, newSize] as [number, number],
+              iconAnchor: [newSize / 2, newSize] as [number, number],
+              popupAnchor: [1, -newSize] as [number, number],
+              className: `!flex items-end ${pinData.className}`,
+            });
+            markerRef.leafletElement.setIcon(newIcon);
+          }
+        }
+      });
+    },
+  });
+
+  // ズームレベルに応じてピンのサイズを計算
+  const getPinSize = (zoom: number) => {
+    // ズームレベルに応じてサイズを調整
+    const baseSize = 24;
+    const size = Math.max(baseSize * (zoom / 2), baseSize);
+    return size;
+  };
+
+  const pinSize = getPinSize(currentZoom);
+  const iconSize: [number, number] = [pinSize, pinSize];
+  const iconAnchor: [number, number] = [pinSize / 2, pinSize];
+  // PopupをpinSize分だけズラす
+  const popupAnchor: [number, number] = [1, -pinSize];
+
+  const LayersControlList = pins.map(({ name, pins }, index) => {
+    const pinsList = pins.map(
+      (pin) => {
+        // ピンデータを保存
+        pinDataRefs.current.set(pin.short_id, pin);
+        
+        const icon = new DivIcon({
+          html: renderToStaticMarkup(
+            <MapPin
+              strokeWidth={1}
+              style={{ width: `${pinSize}px`, height: `${pinSize}px` }}
+              className="[&>path]:fill-blue-500 [&>circle]:fill-white"
+            />
+          ),
+          iconSize,
+          iconAnchor,
+          popupAnchor,
+          className: `!flex items-end ${pin.className}`,
+        });
+        return (
+          <Marker
+            key={pin.short_id} // ズームレベルをkeyから削除
+            ref={(ref) => {
+              if (ref) {
+                markerRefs.current.set(pin.short_id, ref);
+              }
+            }}
+            position={[pin.lat, pin.lng]}
+            icon={icon}
+            zIndexOffset={pin.zIndexOffset || 0}
+          >
+            {pin.title && (
+              <Popup>
+                <div className="space-y-2">
+                  <div className="text-center font-bold py-2">{pin.title}</div>
+                  {pin.description && 
+                  <ScrollArea
+                    className="
+                      rounded-md bg-neutral-100
+                      p-2 pr-8 pl-4
+                      [&_[data-slot=scroll-area-viewport]]:max-h-48
+                      [&_[data-slot=scroll-area-viewport]]:rounded-none
+                      [&_[data-slot=scroll-area-thumb]]:bg-red-700
+                    "
+                    type="always"
+                  >
+                    <Markdown markdown={pin.description} />
+                  </ScrollArea>
+                  }
+                  {pin.reference_title && pin.reference_url && (
+                    <div className="text-right">
+                      <a
+                        className="text-xm !text-red-500"
+                        href={pin.reference_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {pin.reference_title}
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </Popup>
+            )}
+          </Marker>
+        );
+      }
+    );
+    return (
+      <LayersControl.Overlay checked name={name} key={index}>
+        <LayerGroup>{pinsList}</LayerGroup>
+      </LayersControl.Overlay>
+    );
+  });
+
+  return <LayersControl>{LayersControlList}</LayersControl>;
+}
 
 function ClipboardMapClick() {
   useMapEvents({
@@ -204,67 +335,6 @@ export default function RedMap({ system, pins: pinsRaw, dev }: MapProps) {
     };
   }, [isMapReady]);
 
-  const LayersControlList = pins.map(({ name, pins }, index) => {
-    const pinsList = pins.map(
-      (pin) => {
-        const icon = new Icon({
-          iconUrl: "/map/marker-icon.png",
-          iconSize: [25, 41],
-          iconAnchor: [12, 41],
-          popupAnchor: [1, -34],
-          className: `${pin.className}`,
-        });
-        return (
-          <Marker
-            key={pin.short_id}
-            position={[pin.lat, pin.lng]}
-            icon={icon}
-            zIndexOffset={pin.zIndexOffset || 0}
-          >
-            {pin.title && (
-              <Popup>
-                <div className="space-y-2">
-                  <div className="text-center font-bold py-2">{pin.title}</div>
-                  {pin.description && 
-                  <ScrollArea
-                    className="
-                      rounded-md bg-neutral-100
-                      p-2 pr-8 pl-4
-                      [&_[data-slot=scroll-area-viewport]]:max-h-48
-                      [&_[data-slot=scroll-area-viewport]]:rounded-none
-                      [&_[data-slot=scroll-area-thumb]]:bg-red-700
-                    "
-                    type="always"
-                  >
-                    <Markdown markdown={pin.description} />
-                  </ScrollArea>
-                  }
-                  {pin.reference_title && pin.reference_url && (
-                    <div className="text-right">
-                      <a
-                        className="text-xm !text-red-500"
-                        href={pin.reference_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {pin.reference_title}
-                      </a>
-                    </div>
-                  )}
-                </div>
-              </Popup>
-            )}
-          </Marker>
-        );
-      }
-    );
-    return (
-      <LayersControl.Overlay checked name={name} key={index}>
-        <LayerGroup>{pinsList}</LayerGroup>
-      </LayersControl.Overlay>
-    );
-  });
-
   const directory = system === "edge" ? "CyberpunkEdgerunners" : "CyberpunkRed";
   const attribution = system === "edge" ? undefined : '<a href="https://rtalsoriangames.com/2025/01/15/cyberpunk-red-alert-january-2025-dlc-night-city-atlas/" target="_blank">R. Talsorian Games</a>';
   const mapBackground = system === "edge" ? "#3c3a3b" : "#1e1e29";
@@ -295,7 +365,7 @@ export default function RedMap({ system, pins: pinsRaw, dev }: MapProps) {
         attribution={attribution}
       />
       {dev && <ClipboardMapClick />}
-      {pinsRaw && <LayersControl>{LayersControlList}</LayersControl> }
+      {pinsRaw && <ZoomAwarePins pins={pins} dev={dev} />}
     </MapContainer>
     {moveMapCenterData && (
       <Dialog
