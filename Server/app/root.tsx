@@ -9,6 +9,7 @@ import {
 
 import type { Route } from "./+types/root";
 import "./app.css";
+import Error from "~/components/error";
 
 const URL = "https://cyberpunk.ydk.vc";
 
@@ -97,6 +98,9 @@ export default function App() {
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
+  if (!import.meta.env.DEV) {
+    return <Error />;
+  }
   let message = "Oops!";
   let details = "An unexpected error occurred.";
   let stack: string | undefined;
@@ -108,8 +112,8 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
         ? "The requested page could not be found."
         : error.statusText || details;
   } else if (import.meta.env.DEV && error && error instanceof Error) {
-    details = error.message;
-    stack = error.stack;
+    details = (error as Error).message;
+    stack = (error as Error).stack;
   }
 
   return (
