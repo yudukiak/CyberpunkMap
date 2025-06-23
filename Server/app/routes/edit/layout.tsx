@@ -13,7 +13,10 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   const { supabase } = createClient(request);
   const { data, error } = await supabase.auth.getUser();
   const isLoggedIn = data.user !== null;
-  if (!isLoggedIn) return redirect("/");
+  if (!isLoggedIn) {
+    return redirect("/");
+  }
+  return { success: true };
 }
 
 const components: { title: string; href: string }[] = [
